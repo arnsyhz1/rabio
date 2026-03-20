@@ -32,6 +32,21 @@ export const request = (method, path) => {
         url = url.slice(0, -1);
     }
 
+    const parseJsonResponse = async (res) => {
+        const contentType = res.headers.get('content-type') || '';
+        const payload = await res.text();
+
+        if (!contentType.includes('application/json')) {
+            throw new Error(`Endpoint ${url + path} mengembalikan respons non-JSON. Pastikan URL API komentar/dashboard sudah benar.`);
+        }
+
+        try {
+            return JSON.parse(payload);
+        } catch {
+            throw new Error(`Endpoint ${url + path} mengembalikan JSON tidak valid.`);
+        }
+    };
+
     return {
         /**
          * @template T
@@ -41,7 +56,7 @@ export const request = (method, path) => {
         send(transform = null) {
             return fetch(url + path, req)
                 .then((res) => {
-                    return res.json().then((json) => {
+                    return parseJsonResponse(res).then((json) => {
                         if (res.status >= HTTP_STATUS_INTERNAL_SERVER_ERROR && (json.message ?? json[0])) {
                             throw new Error(json.message ?? json[0]);
                         }
