@@ -18,6 +18,29 @@
     font-family: "Courgette", cursive !important;
 }
 
+body[data-template="classic"] {
+    --template-accent: #8573f1;
+    --template-highlight: #f8f9fa;
+}
+
+body[data-template="royal"] {
+    --template-accent: #8c6b1f;
+    --template-highlight: #fff6d6;
+}
+
+body[data-template="garden"] {
+    --template-accent: #2f855a;
+    --template-highlight: #e8fff2;
+}
+
+body[data-template="royal"] .font-esthetic {
+    font-family: "Courgette", cursive !important;
+}
+
+body[data-template="garden"] .font-esthetic {
+    font-family: 'Andika', sans-serif !important;
+}
+
 .font-arabic {
     font-family: 'Noto Naskh Arabic', serif !important;
 }
@@ -52,6 +75,32 @@ html[data-bs-theme="light"] .btn-float {
     width: 100%;
     height: 100%;
     z-index: 1056;
+}
+
+body[data-template] .btn-primary {
+    --bs-btn-bg: var(--template-accent);
+    --bs-btn-border-color: var(--template-accent);
+    --bs-btn-hover-bg: color-mix(in srgb, var(--template-accent) 80%, #000);
+    --bs-btn-hover-border-color: color-mix(in srgb, var(--template-accent) 80%, #000);
+}
+
+body[data-template] .img-center-crop {
+    border-color: var(--template-accent) !important;
+}
+
+body[data-template] .border.rounded-pill.shadow.py-2.px-4.mt-2.mb-4,
+body[data-template] .border.rounded-4.shadow.p-3.mb-2,
+body[data-template] .border.rounded-5.shadow.p-3 {
+    border-color: color-mix(in srgb, var(--template-accent) 45%, transparent) !important;
+    box-shadow: 0 0.75rem 2rem color-mix(in srgb, var(--template-accent) 18%, transparent) !important;
+}
+
+body[data-template="royal"] .bg-overlay-auto {
+    background-color: rgba(58, 44, 12, 0.55) !important;
+}
+
+body[data-template="garden"] .bg-overlay-auto {
+    background-color: rgba(18, 83, 54, 0.35) !important;
 }
 
 html[data-bs-theme="light"] .color-theme-svg {

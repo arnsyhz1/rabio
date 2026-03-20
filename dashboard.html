@@ -40,7 +40,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=" crossorigin="anonymous"></script>
     <script src="./dist/admin.js"></script>
   </head>
-  <body data-url="https://api.erland.me/">
+  <body data-url="https://api.erland.me/" data-profile-url="./api/profile.php">
     <!-- Nav bottom -->
     <nav class="navbar navbar-expand fixed-bottom rounded-top-4 border-top d-md-none d-lg-none d-xl-none p-0">
       <ul class="navbar-nav nav-justified w-100 align-items-center">
@@ -63,7 +63,6 @@
       <!-- Header -->
       <div class="d-none d-sm-flex justify-content-between align-items-center mt-4 mb-5 pt-1">
         <h4 class="m-0 p-0 flex-grow-1 fw-bold">Dashboard Undangan</h4>
-        </h4>
         <div class="m-0 p-0 flex-grow-1 text-end" id="dashboard-name" style="font-size: 1.4rem;">
           <div class="placeholder-wave">
             <span class="placeholder col-6 rounded-4"></span>
@@ -304,6 +303,116 @@
                 <div class="d-flex justify-content-end">
                   <button type="button" class="btn btn-sm btn-primary rounded-4 shadow-sm" id="button-change-password" onclick="undangan.admin.changePassword(this)" disabled data-offline-disabled="false">Change</button>
                 </div>
+              </div>
+              <!-- Premium Wedding Profile -->
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                  <p class="mx-0 my-0 p-0 fw-bold">
+                    <i class="fa-solid fa-gem me-2"></i>Premium Wedding Profile
+                  </p>
+                  <span class="badge text-bg-warning text-dark rounded-pill px-3 py-2">CMS Lite</span>
+                </div>
+                <p class="small text-secondary mb-3">Kelola banyak pasangan sekaligus dari dashboard. Slug pasangan akan dibuat otomatis dari nama pengantin dan dipakai untuk link publik seperti <code>rabio.com/nama-mempelai</code>.</p>
+                <input type="hidden" id="premium-profile-original-slug">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label fw-semibold" for="premium-profile-picker">Pilih Pasangan</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                      <select class="form-select form-select-sm rounded-4 shadow-sm" id="premium-profile-picker" onchange="undangan.admin.changePremiumProfile(this)"></select>
+                      <button type="button" class="btn btn-sm btn-outline-primary rounded-4 shadow-sm" onclick="undangan.admin.createPremiumProfile()">Pasangan Baru</button>
+                      <button type="button" class="btn btn-sm btn-outline-danger rounded-4 shadow-sm" onclick="undangan.admin.deletePremiumProfile(this)">Hapus</button>
+                    </div>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-invitation-label">Invitation Label</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-invitation-label" maxlength="60">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-desktop-badge">Desktop Badge</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-desktop-badge" maxlength="60">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-bride-short">Bride Short Name</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-bride-short" maxlength="40" data-premium-sync="slug">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-groom-short">Groom Short Name</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-groom-short" maxlength="40" data-premium-sync="slug">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-bride-full">Bride Full Name</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-bride-full" maxlength="80">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-groom-full">Groom Full Name</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-groom-full" maxlength="80">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-bride-role">Bride Role</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-bride-role" maxlength="80">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-groom-role">Groom Role</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-groom-role" maxlength="80">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-template-key">Template</label>
+                    <select class="form-select form-select-sm rounded-4 shadow-sm" id="premium-template-key"></select>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-bride-parents">Bride Parents</label>
+                    <textarea class="form-control form-control-sm rounded-4 shadow-sm" id="premium-bride-parents" rows="3" maxlength="240"></textarea>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-groom-parents">Groom Parents</label>
+                    <textarea class="form-control form-control-sm rounded-4 shadow-sm" id="premium-groom-parents" rows="3" maxlength="240"></textarea>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-event-date">Event Date Label</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-event-date" maxlength="80">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-guest-salutation">Guest Salutation</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-guest-salutation" maxlength="120">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold" for="premium-intro">Invitation Intro</label>
+                    <textarea class="form-control form-control-sm rounded-4 shadow-sm" id="premium-intro" rows="3" maxlength="300"></textarea>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold" for="premium-base-url">Base URL</label>
+                    <input type="url" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-base-url" maxlength="200" data-premium-sync="slug">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-generated-slug">Generated Slug</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-generated-slug" readonly>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-generated-url">Public URL</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-generated-url" readonly>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-calendar-title">Calendar Title</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-calendar-title" maxlength="120">
+                  </div>
+                  <div class="col-12 col-lg-3">
+                    <label class="form-label fw-semibold" for="premium-calendar-start">Calendar Start</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-calendar-start" maxlength="19" placeholder="YYYY-MM-DD HH:mm:ss">
+                  </div>
+                  <div class="col-12 col-lg-3">
+                    <label class="form-label fw-semibold" for="premium-calendar-end">Calendar End</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-calendar-end" maxlength="19" placeholder="YYYY-MM-DD HH:mm:ss">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold" for="premium-calendar-location">Calendar Location / Maps URL</label>
+                    <input type="url" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-calendar-location" maxlength="240">
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2 flex-wrap mt-3">
+                  <button type="button" class="btn btn-sm btn-outline-secondary rounded-4 shadow-sm" onclick="undangan.admin.resetPremiumProfile(this)">Reset</button>
+                  <button type="button" class="btn btn-sm btn-primary rounded-4 shadow-sm" onclick="undangan.admin.savePremiumProfile(this)">Save Premium Profile</button>
+                </div>
+                <div class="alert alert-secondary rounded-4 py-2 px-3 mt-3 mb-0" id="premium-status" role="status">Belum ada perubahan premium profile di sesi ini.</div>
               </div>
               <!-- Logout -->
               <div class="d-md-none d-lg-none d-xl-none">
