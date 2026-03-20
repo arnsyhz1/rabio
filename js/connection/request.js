@@ -14,7 +14,7 @@ export const request = (method, path) => {
 
     const ac = new AbortController();
 
-    let url = document.body.getAttribute('data-url');
+    let url = document.body.getAttribute('data-url') || window.location.origin || '';
     let req = {
         signal: ac.signal,
         method: String(method).toUpperCase(),
@@ -28,7 +28,7 @@ export const request = (method, path) => {
     window.addEventListener('popstate', () => ac.abort());
     window.addEventListener('beforeunload', () => ac.abort());
 
-    if (url.slice(-1) === '/') {
+    if (url.length > 0 && url.slice(-1) === '/') {
         url = url.slice(0, -1);
     }
 

@@ -12,22 +12,22 @@
     <meta name="description" content="Save the Date! Tari and Erland will be getting married on Thursday, July 24th, 2025. We would be honored to have you join us in celebrating this special day.">
     <meta property="og:title" content="The Wedding of Tari and Erland — You're invited!">
     <meta property="og:description" content="Save the Date! Tari and Erland will be getting married on Thursday, July 24th, 2025. We would be honored to have you join us in celebrating this special day.">
-    <meta property="og:image" content="https://tari.erland.me/assets/images/share.webp">
-    <meta property="og:image:secure_url" content="https://tari.erland.me/assets/images/share.webp">
+    <meta property="og:image" content="./assets/images/share.webp">
+    <meta property="og:image:secure_url" content="./assets/images/share.webp">
     <meta property="og:image:type" content="image/webp">
     <meta property="og:image:alt" content="The Wedding of Tari and Erland — You're invited!">
     <meta property="og:image:width" content="512">
     <meta property="og:image:height" content="512">
     <meta property="og:type" content="website">
     <meta property="og:locale" content="id_ID">
-    <meta property="og:url" content="https://tari.erland.me/">
+    <meta property="og:url" content="./">
     <meta property="og:site_name" content="The Wedding of Tari and Erland — You're invited!">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="The Wedding of Tari and Erland — You're invited! ">
     <meta name="theme-color" content="#222222">
     <meta name="color-scheme" content="dark light">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="canonical" href="https://tari.erland.me/">
+    <link rel="canonical" href="./">
     <link rel="shortcut icon" type="image/x-icon" href="/assets/favicon.ico">
     <link rel="apple-touch-icon" sizes="192x192" href="/assets/images/icon-192x192.png">
     <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
@@ -59,7 +59,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.js" integrity="sha256-4QOrAnhDOdVsk8o96+LFopk3LK/FIVFI1VKD3gRuhtE=" crossorigin="anonymous"></script>
     <script src="./dist/guest.js"></script>
   </head>
-  <body data-key="2f3b23b6b4a1b57ca7c75a8b38c45497a72d3b9b244822be19" data-url="https://api.erland.me/">
+  <body data-key="2f3b23b6b4a1b57ca7c75a8b38c45497a72d3b9b244822be19" data-url="" data-profile-url="./api/profile.php" data-template="classic">
     <!-- Root Invitation -->
     <div class="row m-0 p-0" style="opacity: 0;" id="root">
       <!-- Desktop mode -->
@@ -69,8 +69,8 @@
             <img src="./assets/images/tari-erland-bg-desktop.webp" alt="background" class="position-absolute opacity-25 top-50 start-50 translate-middle bg-cover-home">
             <div class="text-center position-relative">
               <div class="text-center p-4 bg-overlay-auto rounded-5">
-                <h2 class="font-esthetic mb-4" style="font-size: 3rem;">Save the Date!</h2>
-                <p class="m-0" style="font-size: 1rem;">Tari and Erland will be getting married on Thursday, July 24th, 2025.</p>
+                <h2 class="font-esthetic mb-4" style="font-size: 3rem;" id="desktop-badge">Save the Date!</h2>
+                <p class="m-0" style="font-size: 1rem;" id="desktop-summary">Tari and Erland will be getting married on Thursday, July 24th, 2025.</p>
               </div>
             </div>
           </div>
@@ -119,10 +119,10 @@
           <section id="beranda" class="bg-light-dark position-relative overflow-hidden p-0 m-0">
             <img src="./assets/images/tari-erland-bg.webp" alt="background" class="position-absolute opacity-25 top-50 start-50 translate-middle bg-cover-home">
             <div class="position-relative text-center p-2">
-              <h1 class="font-esthetic my-4 pt-2 fw-medium" style="font-size: 2.25rem;">The Wedding of</h1>
+              <h1 class="font-esthetic my-4 pt-2 fw-medium" style="font-size: 2.25rem;" id="hero-label">The Wedding of</h1>
               <img src="./assets/images/tari-erland-home.webp" alt="tari erland" onclick="undangan.guest.modal(this)" class="img-center-crop rounded-circle border border-3 border-light shadow my-4 mx-auto">
-              <h2 class="font-esthetic my-4" style="font-size: 2.25rem;">Tari & Erland</h2>
-              <p class="my-2" style="font-size: 1.25rem;">Kamis, 24 Juli 2025</p>
+              <h2 class="font-esthetic my-4" style="font-size: 2.25rem;" id="hero-couple">Tari & Erland</h2>
+              <p class="my-2" style="font-size: 1.25rem;" id="hero-date">Kamis, 24 Juli 2025</p>
               <button id="addToCalendar" class="btn btn-outline-auto btn-sm shadow rounded-pill px-3">
                 <svg xmlns="http://www.w3.org/2000/svg" style="vertical-align: -2px;" viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M17,10.039c-3.859,0-7,3.14-7,7,0,3.838,3.141,6.961,7,6.961s7-3.14,7-7c0-3.838-3.141-6.961-7-6.961Zm0,11.961c-2.757,0-5-2.226-5-4.961,0-2.757,2.243-5,5-5s5,2.226,5,4.961c0,2.757-2.243,5-5,5Zm1.707-4.707c.391,.391,.391,1.023,0,1.414-.195,.195-.451,.293-.707,.293s-.512-.098-.707-.293l-1-1c-.188-.188-.293-.442-.293-.707v-2c0-.552,.447-1,1-1s1,.448,1,1v1.586l.707,.707Zm5.293-10.293v2c0,.552-.447,1-1,1s-1-.448-1-1v-2c0-1.654-1.346-3-3-3H5c-1.654,0-3,1.346-3,3v1H11c.552,0,1,.448,1,1s-.448,1-1,1H2v9c0,1.654,1.346,3,3,3h4c.552,0,1,.448,1,1s-.448,1-1,1H5c-2.757,0-5-2.243-5-5V7C0,4.243,2.243,2,5,2h1V1c0-.552,.448-1,1-1s1,.448,1,1v1h8V1c0-.552,.447-1,1-1s1,.448,1,1v1h1c2.757,0,5,2.243,5,5Z"/></svg> Tandai di Kalender</button>
               <div class="d-flex justify-content-center align-items-center mt-4 mb-2">
@@ -141,7 +141,7 @@
           <section class="bg-white-black text-center" id="mempelai">
             <h2 class="font-arabic py-4 m-0" style="font-size: 1.8rem;">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</h2>
             <h2 class="font-heading py-4 m-0" style="margin: 5px 10px !important; font-size: 1.2rem;">Assalamualaikum warahmatullahi wabarakatuh</h2>
-            <p class="pb-4 px-2 m-0" style="font-size: 0.95rem;">Tanpa mengurangi rasa hormat, dengan ini kami mengundang Bapak/Ibu/Saudara/i untuk hadir pada acara pernikahan kami. </p>
+            <p class="pb-4 px-2 m-0" style="font-size: 0.95rem;" id="invitation-intro">Tanpa mengurangi rasa hormat, dengan ini kami mengundang Bapak/Ibu/Saudara/i untuk hadir pada acara pernikahan kami. </p>
             <!-- Love animation -->
             <div class="position-relative">
               <div class="position-absolute" style="top: 0%; right: 5%;">
@@ -153,9 +153,9 @@
             <div class="overflow-x-hidden pb-4">
               <div data-aos="fade-right" data-aos-duration="2000" class="pb-1">
                 <img src="./assets/images/tari-profile.webp" alt="tari profile" onclick="undangan.guest.modal(this)" class="img-center-crop rounded-circle border border-3 border-light shadow my-4 mx-auto">
-                <h2 class="font-esthetic m-0" style="font-size: 2.125rem;">Siti Sukentari</h2>
-                <p class="mt-3 mb-1" style="font-size: 1.25rem;">Putri Pertama</p>
-                <p class="mb-0" style="font-size: 0.95rem;">Bapak Zajang Darman<br>&<br>Ibu Nurul Sulastri</p>
+                <h2 class="font-esthetic m-0" style="font-size: 2.125rem;" id="bride-full-name">Siti Sukentari</h2>
+                <p class="mt-3 mb-1" style="font-size: 1.25rem;" id="bride-role">Putri Pertama</p>
+                <p class="mb-0" style="font-size: 0.95rem;" id="bride-parents">Bapak Zajang Darman<br>&<br>Ibu Nurul Sulastri</p>
               </div>
               <!-- Love animation -->
               <div class="position-relative">
@@ -183,9 +183,9 @@
               </div>
               <div data-aos="fade-left" data-aos-duration="2000" class="pb-1">
                 <img src="./assets/images/erland-profile.webp" alt="erland profile" onclick="undangan.guest.modal(this)" class="img-center-crop rounded-circle border border-3 border-light shadow my-4 mx-auto">
-                <h2 class="font-esthetic m-0" style="font-size: 2.125rem;">Septian Erland Pratama</h2>
-                <p class="mt-3 mb-1" style="font-size: 1.25rem;">Putra Pertama</p>
-                <p class="mb-0" style="font-size: 0.95rem;">Bapak Nasserudin<br>&<br>(Alm.) Ibu Erchamni</p>
+                <h2 class="font-esthetic m-0" style="font-size: 2.125rem;" id="groom-full-name">Septian Erland Pratama</h2>
+                <p class="mt-3 mb-1" style="font-size: 1.25rem;" id="groom-role">Putra Pertama</p>
+                <p class="mb-0" style="font-size: 0.95rem;" id="groom-parents">Bapak Nasserudin<br>&<br>(Alm.) Ibu Erchamni</p>
               </div>
             </div>
             <!-- Love animation -->
@@ -441,7 +441,7 @@
         <div class="d-flex flex-column text-center">
           <h2 class="font-esthetic my-4" style="font-size: 2.3rem;">Undangan Pernikahan</h2>
           <img src="./assets/images/tari-erland-welcome-page.webp" alt="background" class="img-center-crop rounded-circle border border-3 border-light shadow mb-4 mx-auto">
-          <h2 class="font-esthetic mb-4" style="font-size: 2.3rem;">Tari dan Erland</h2>
+          <h2 class="font-esthetic mb-4" style="font-size: 2.3rem;" id="welcome-couple">Tari dan Erland</h2>
           <div id="guest-name" data-message="Kepada Yth. Bapak/Ibu/Saudara/i"></div>
           <button type="button" class="btn btn-light shadow rounded-4 my-3 mx-auto" onclick="undangan.guest.open(this)">
             <svg xmlns="http://www.w3.org/2000/svg" style="vertical-align: -3px;" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7,6c0-.552,.448-1,1-1h8c.553,0,1,.448,1,1s-.447,1-1,1H8c-.552,0-1-.448-1-1Zm1,5h6c.553,0,1-.448,1-1s-.447-1-1-1h-6c-.552,0-1,.448-1,1s.448,1,1,1Zm16,1.708v6.292c0,2.757-2.243,5-5,5H5c-2.757,0-5-2.243-5-5v-6.292c0-1.356,.562-2.673,1.541-3.611l1.459-1.398v-3.699C3,1.794,4.794,0,7,0h10c2.206,0,4,1.794,4,4v3.699l1.459,1.397c.979,.938,1.541,2.254,1.541,3.611ZM5,4V12.243l4.878,4.879c1.134,1.133,3.11,1.133,4.243,0l4.879-4.879V4c0-1.103-.897-2-2-2H7c-1.103,0-2,.897-2,2ZM22,12.708c0-.195-.02-.389-.058-.579l-6.407,6.407c-.944,.944-2.199,1.464-3.535,1.464s-2.591-.52-3.536-1.464L2.058,12.128c-.038,.19-.058,.384-.058,.579v6.292c0,1.654,1.346,3,3,3h14c1.654,0,3-1.346,3-3v-6.292Z"/></svg> 
