@@ -1,3 +1,6 @@
+-- App schema reference.
+-- For a ready-to-import migration, use database/001_init_rabio.sql
+
 CREATE TABLE IF NOT EXISTS wedding_templates (
     template_key VARCHAR(50) PRIMARY KEY,
     template_name VARCHAR(100) NOT NULL,
