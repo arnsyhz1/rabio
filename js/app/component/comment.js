@@ -544,7 +544,15 @@ export const comment = (() => {
             return;
         }
 
-        fetch(`https://api.erland.me/ipapi.php?ip=${c.ip}`)
+        const ipLookupUrl = document.body.getAttribute('data-ip-lookup-url');
+        if (!ipLookupUrl) {
+            tracker.set(c.ip, c.ip);
+            document.getElementById(`ip-${c.uuid}`).innerHTML =
+                `<i class="fa-solid fa-location-dot me-1"></i>${util.escapeHtml(c.ip)} <strong>IP lookup dinonaktifkan</strong>`;
+            return;
+        }
+
+        fetch(`${ipLookupUrl}?ip=${encodeURIComponent(c.ip)}`)
             .then((res) => res.json())
             .then((res) => {
                 console.log('API Response:', res);

@@ -16,7 +16,7 @@ export const auth = (() => {
      * @param {HTMLButtonElement} button
      * @returns {Promise<void>}
      */
-    const login = async (button) => {
+    const loginAdmin = async (button) => {
         const btn = util.disableButton(button);
 
         const formEmail = document.getElementById('loginEmail');
@@ -38,10 +38,43 @@ export const auth = (() => {
     };
 
     /**
+     * @param {HTMLButtonElement} button
+     * @returns {Promise<void>}
+     */
+    const loginUser = async (button) => {
+        const btn = util.disableButton(button, 'Validating');
+        const accessKeyField = document.getElementById('loginAccessKey');
+        const accessKey = accessKeyField.value.trim();
+
+        if (accessKey.length === 0) {
+            btn.restore();
+            alert('Access key tidak boleh kosong');
+            return;
+        }
+
+        accessKeyField.disabled = true;
+        session.setToken(accessKey);
+
+        const valid = await session.guest().then(() => true, () => false);
+        if (valid) {
+            accessKeyField.value = '';
+            bs.modal('mainModal').hide();
+            window.location.reload();
+            return;
+        }
+
+        session.logout();
+        accessKeyField.disabled = false;
+        btn.restore();
+        alert('Access key user tidak valid');
+    };
+
+    /**
      * @returns {void}
      */
     const clearSession = () => {
         user.clear();
+        storage('config').clear();
         session.logout();
         bs.modal('mainModal').show();
     };
@@ -78,7 +111,8 @@ export const auth = (() => {
 
     return {
         init,
-        login,
+        loginAdmin,
+        loginUser,
         clearSession,
         getDetailUser,
         getUserStorage,

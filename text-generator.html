@@ -13,9 +13,9 @@
     <meta name="apple-mobile-web-app-title" content="Pembuat Teks Undangan Pernikahan">
     <meta name="theme-color" content="#222222">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="shortcut icon" type="image/x-icon" href="https://tari.erland.me/assets/favicon.ico">
-    <link rel="apple-touch-icon" sizes="192x192" href="https://tari.erland.me/assets/images/icon-192x192.png">
-    <link rel="icon" type="image/x-icon" href="https://tari.erland.me/assets/favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="./assets/favicon.ico">
+    <link rel="apple-touch-icon" sizes="192x192" href="./assets/images/icon-192x192.png">
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="./css/generator.css">
 </head>
@@ -46,7 +46,42 @@
     </div>
 
     <script>
-        const BASE_URL = "https://tari.erland.me";
+        const PROFILE_KEY = "wedding_profiles_cache";
+        const API_URL = "./api/profile.php";
+        const getCachedProfile = () => {
+            try {
+                const registry = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+                const items = registry.items || {};
+                const activeSlug = registry.activeSlug;
+                return items[activeSlug] || Object.values(items)[0] || {};
+            } catch {
+                return {};
+            }
+        };
+        let profile = getCachedProfile();
+        const resolveProfileValues = () => {
+            const baseUrl = profile.baseUrl || window.location.origin;
+            const brideName = profile.brideShortName || "Tari";
+            const groomName = profile.groomShortName || "Erland";
+            const coupleSlug = [brideName, groomName]
+                .map(value => String(value).normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[_\s]+/g, '-').replace(/-+/g, '-').toLowerCase())
+                .filter(Boolean)
+                .join('-') || 'wedding-couple';
+
+            return { baseUrl, brideName, groomName, coupleSlug };
+        };
+        const loadProfile = async () => {
+            try {
+                const response = await fetch(API_URL, { headers: { Accept: "application/json" } });
+                const result = await response.json();
+                const registry = result.data || {};
+                const items = registry.profiles || [];
+                const activeSlug = registry.activeSlug;
+                profile = items.find(item => item.slug === activeSlug) || items[0] || profile;
+            } catch {
+                profile = getCachedProfile();
+            }
+        };
         const MESSAGES = {
             EMPTY_NAME: "Isi dulu nama tamunya",
             NO_INVITATION: "Belum ada teks undangan yang bisa disalin",
@@ -94,7 +129,8 @@
             }
 
             guestName = capitalizeWords(guestName);
-            const paramsUrl = `${BASE_URL}/?to=${encodeURIComponent(guestName)}`;
+            const { baseUrl, brideName, groomName, coupleSlug } = resolveProfileValues();
+            const paramsUrl = `${baseUrl.replace(/\/+$/, '')}/invitation.html?wedding=${encodeURIComponent(coupleSlug)}&to=${encodeURIComponent(guestName)}`;
 
             getElement("invitationText").value =
 `Kepada Yth.
@@ -105,7 +141,7 @@ _Assalamualaikum warahmatullahi wabarakatuh_
 
 Dengan penuh rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara pernikahan kami:
 
-Tari & Erland
+${brideName} & ${groomName}
 
 Untuk informasi lengkap mengenai detail waktu dan lokasi acara, silakan klik tautan berikut:
 
@@ -117,6 +153,8 @@ Mohon maaf karena undangan ini kami sampaikan melalui pesan singkat.
 
 _Wassalamualaikum warahmatullahi wabarakatuh_`;
         }
+
+        loadProfile().then(generateInvitation);
 
         async function copyInvitation() {
             const invitationText = getElement("invitationText");

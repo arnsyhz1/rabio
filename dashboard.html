@@ -12,10 +12,10 @@
     <meta name="theme-color" content="#00CCFF">
     <meta name="color-scheme" content="dark light">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="canonical" href="https://tari.erland.me/">
-    <link rel="shortcut icon" type="image/x-icon" href="https://tari.erland.me/assets/favicon.ico">
-    <link rel="apple-touch-icon" sizes="192x192" href="https://tari.erland.me/assets/images/icon-192x192.png">
-    <link rel="icon" type="image/x-icon" href="https://tari.erland.me/assets/favicon.ico">
+    <link rel="canonical" href="./dashboard.html">
+    <link rel="shortcut icon" type="image/x-icon" href="./assets/favicon.ico">
+    <link rel="apple-touch-icon" sizes="192x192" href="./assets/images/icon-192x192.png">
+    <link rel="icon" type="image/x-icon" href="./assets/favicon.ico">
     <!-- Preconnect CDN -->
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
@@ -40,7 +40,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha256-CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC+mjoJimHGw=" crossorigin="anonymous"></script>
     <script src="./dist/admin.js"></script>
   </head>
-  <body data-url="https://api.erland.me/">
+  <body data-url="https://api.erland.me/" data-profile-url="./api/profile.php">
     <!-- Nav bottom -->
     <nav class="navbar navbar-expand fixed-bottom rounded-top-4 border-top d-md-none d-lg-none d-xl-none p-0">
       <ul class="navbar-nav nav-justified w-100 align-items-center">
@@ -63,10 +63,14 @@
       <!-- Header -->
       <div class="d-none d-sm-flex justify-content-between align-items-center mt-4 mb-5 pt-1">
         <h4 class="m-0 p-0 flex-grow-1 fw-bold">Dashboard Undangan</h4>
-        </h4>
-        <div class="m-0 p-0 flex-grow-1 text-end" id="dashboard-name" style="font-size: 1.4rem;">
-          <div class="placeholder-wave">
-            <span class="placeholder col-6 rounded-4"></span>
+        <div class="m-0 p-0 flex-grow-1 text-end">
+          <div id="dashboard-name" style="font-size: 1.4rem;">
+            <div class="placeholder-wave">
+              <span class="placeholder col-6 rounded-4"></span>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="badge rounded-pill text-bg-dark px-3 py-2" id="dashboard-role-badge">Role: -</span>
           </div>
         </div>
       </div>
@@ -206,6 +210,15 @@
                   </div>
                 </div>
               </div>
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="admin">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <div>
+                    <p class="mx-0 mt-0 mb-1 p-0 fw-bold"><i class="fa-solid fa-user-shield me-2"></i>Akses Dashboard</p>
+                    <p class="m-0 p-0 text-secondary" id="dashboard-role-description">Hak akses akan menyesuaikan role login Anda.</p>
+                  </div>
+                  <span class="badge rounded-pill text-bg-primary px-3 py-2" id="dashboard-role-chip">Memuat role...</span>
+                </div>
+              </div>
               <!-- Form -->
               <div class="bg-theme-auto p-3 mt-2 rounded-4 shadow">
                 <label for="form-comment" class="form-label fw-bold my-1">
@@ -229,6 +242,12 @@
                   <i class="fa-solid fa-gear mx-2"></i>Setting
                 </h5>
               </div>
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="user" style="display: none;">
+                <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
+                  <i class="fa-solid fa-circle-info me-2"></i>User Workspace
+                </p>
+                <p class="m-0 p-0 text-secondary">Mode user difokuskan untuk operasional harian. Pengaturan sensitif seperti access key, password, dan premium profile hanya tampil untuk admin.</p>
+              </div>
               <!-- Email -->
               <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
                 <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
@@ -237,7 +256,7 @@
                 <p class="m-0 p-0" id="dashboard-email"></p>
               </div>
               <!-- Name -->
-              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="admin">
                 <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
                   <i class="fa-solid fa-person me-2"></i>Name
                 </p>
@@ -251,7 +270,7 @@
                 </div>
               </div>
               <!-- Access Key -->
-              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="admin">
                 <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
                   <i class="fa-solid fa-key me-2"></i>Access Key
                 </p>
@@ -266,7 +285,7 @@
                 </div>
               </div>
               <!-- Toggle -->
-              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="admin">
                 <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
                   <i class="fa-solid fa-sliders me-2"></i>Control
                 </p>
@@ -288,7 +307,7 @@
                 </div>
               </div>
               <!-- Change Password -->
-              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="admin">
                 <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
                   <i class="fa-solid fa-lock me-2"></i>Change Password
                 </p>
@@ -304,6 +323,116 @@
                 <div class="d-flex justify-content-end">
                   <button type="button" class="btn btn-sm btn-primary rounded-4 shadow-sm" id="button-change-password" onclick="undangan.admin.changePassword(this)" disabled data-offline-disabled="false">Change</button>
                 </div>
+              </div>
+              <!-- Premium Wedding Profile -->
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                  <p class="mx-0 my-0 p-0 fw-bold">
+                    <i class="fa-solid fa-gem me-2"></i>Premium Wedding Profile
+                  </p>
+                  <span class="badge text-bg-warning text-dark rounded-pill px-3 py-2">CMS Lite</span>
+                </div>
+                <p class="small text-secondary mb-3">Kelola banyak pasangan sekaligus dari dashboard. Slug pasangan akan dibuat otomatis dari nama pengantin dan dipakai untuk link publik seperti <code>rabio.com/invitation.html?wedding=nama-mempelai</code>.</p>
+                <input type="hidden" id="premium-profile-original-slug">
+                <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label fw-semibold" for="premium-profile-picker">Pilih Pasangan</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                      <select class="form-select form-select-sm rounded-4 shadow-sm" id="premium-profile-picker" onchange="undangan.admin.changePremiumProfile(this)"></select>
+                      <button type="button" class="btn btn-sm btn-outline-primary rounded-4 shadow-sm" onclick="undangan.admin.createPremiumProfile()">Pasangan Baru</button>
+                      <button type="button" class="btn btn-sm btn-outline-danger rounded-4 shadow-sm" onclick="undangan.admin.deletePremiumProfile(this)">Hapus</button>
+                    </div>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-invitation-label">Invitation Label</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-invitation-label" maxlength="60">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-desktop-badge">Desktop Badge</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-desktop-badge" maxlength="60">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-bride-short">Bride Short Name</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-bride-short" maxlength="40" data-premium-sync="slug">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-groom-short">Groom Short Name</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-groom-short" maxlength="40" data-premium-sync="slug">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-bride-full">Bride Full Name</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-bride-full" maxlength="80">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-groom-full">Groom Full Name</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-groom-full" maxlength="80">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-bride-role">Bride Role</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-bride-role" maxlength="80">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-groom-role">Groom Role</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-groom-role" maxlength="80">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-template-key">Template</label>
+                    <select class="form-select form-select-sm rounded-4 shadow-sm" id="premium-template-key"></select>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-bride-parents">Bride Parents</label>
+                    <textarea class="form-control form-control-sm rounded-4 shadow-sm" id="premium-bride-parents" rows="3" maxlength="240"></textarea>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-groom-parents">Groom Parents</label>
+                    <textarea class="form-control form-control-sm rounded-4 shadow-sm" id="premium-groom-parents" rows="3" maxlength="240"></textarea>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-event-date">Event Date Label</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-event-date" maxlength="80">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-guest-salutation">Guest Salutation</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-guest-salutation" maxlength="120">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold" for="premium-intro">Invitation Intro</label>
+                    <textarea class="form-control form-control-sm rounded-4 shadow-sm" id="premium-intro" rows="3" maxlength="300"></textarea>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold" for="premium-base-url">Base URL</label>
+                    <input type="url" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-base-url" maxlength="200" data-premium-sync="slug">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-generated-slug">Generated Slug</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-generated-slug" readonly>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-generated-url">Public URL</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-generated-url" readonly>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-calendar-title">Calendar Title</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-calendar-title" maxlength="120">
+                  </div>
+                  <div class="col-12 col-lg-3">
+                    <label class="form-label fw-semibold" for="premium-calendar-start">Calendar Start</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-calendar-start" maxlength="19" placeholder="YYYY-MM-DD HH:mm:ss">
+                  </div>
+                  <div class="col-12 col-lg-3">
+                    <label class="form-label fw-semibold" for="premium-calendar-end">Calendar End</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-calendar-end" maxlength="19" placeholder="YYYY-MM-DD HH:mm:ss">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold" for="premium-calendar-location">Calendar Location / Maps URL</label>
+                    <input type="url" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-calendar-location" maxlength="240">
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2 flex-wrap mt-3">
+                  <button type="button" class="btn btn-sm btn-outline-secondary rounded-4 shadow-sm" onclick="undangan.admin.resetPremiumProfile(this)">Reset</button>
+                  <button type="button" class="btn btn-sm btn-primary rounded-4 shadow-sm" onclick="undangan.admin.savePremiumProfile(this)">Save Premium Profile</button>
+                </div>
+                <div class="alert alert-secondary rounded-4 py-2 px-3 mt-3 mb-0" id="premium-status" role="status">Belum ada perubahan premium profile di sesi ini.</div>
               </div>
               <!-- Logout -->
               <div class="d-md-none d-lg-none d-xl-none">
@@ -325,19 +454,43 @@
         <div class="modal-content rounded-4">
           <div class="modal-body">
             <form>
-              <div class="mb-3">
-                <label for="loginEmail" class="form-label my-1">
-                  <i class="fa-solid fa-envelope me-2"></i>Email </label>
-                <input type="email" class="form-control shadow-sm rounded-4" id="loginEmail" minlength="5" maxlength="254" placeholder="Masukkan email Anda" required autocomplete="email" data-offline-disabled="false">
-              </div>
-              <div class="mb-3">
-                <label for="loginPassword" class="form-label my-1">
-                  <i class="fa-solid fa-lock me-2"></i>Password </label>
-                <input type="password" class="form-control shadow-sm rounded-4" id="loginPassword" minlength="8" maxlength="20" placeholder="Masukkan password Anda" required autocomplete="current-password" data-offline-disabled="false">
-              </div>
-              <div class="d-grid">
-                <button type="submit" class="btn btn-primary shadow-sm rounded-4" onclick="undangan.admin.auth.login(this)" data-offline-disabled="false">
-                  <i class="fa-solid fa-right-to-bracket me-2"></i>Login </button>
+              <ul class="nav nav-pills nav-fill gap-2 mb-4" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active rounded-4" data-bs-toggle="pill" data-bs-target="#login-admin-pane" type="button" role="tab">Admin</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link rounded-4" data-bs-toggle="pill" data-bs-target="#login-user-pane" type="button" role="tab">User</button>
+                </li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane fade show active" id="login-admin-pane" role="tabpanel" tabindex="0">
+                  <div class="mb-3">
+                    <label for="loginEmail" class="form-label my-1">
+                      <i class="fa-solid fa-envelope me-2"></i>Email </label>
+                    <input type="email" class="form-control shadow-sm rounded-4" id="loginEmail" minlength="5" maxlength="254" placeholder="Masukkan email admin" autocomplete="email" data-offline-disabled="false">
+                  </div>
+                  <div class="mb-3">
+                    <label for="loginPassword" class="form-label my-1">
+                      <i class="fa-solid fa-lock me-2"></i>Password </label>
+                    <input type="password" class="form-control shadow-sm rounded-4" id="loginPassword" minlength="8" maxlength="20" placeholder="Masukkan password admin" autocomplete="current-password" data-offline-disabled="false">
+                  </div>
+                  <div class="d-grid">
+                    <button type="button" class="btn btn-primary shadow-sm rounded-4" onclick="undangan.admin.auth.loginAdmin(this)" data-offline-disabled="false">
+                      <i class="fa-solid fa-right-to-bracket me-2"></i>Login sebagai Admin </button>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="login-user-pane" role="tabpanel" tabindex="0">
+                  <div class="mb-3">
+                    <label for="loginAccessKey" class="form-label my-1">
+                      <i class="fa-solid fa-key me-2"></i>Access Key / Token User </label>
+                    <input type="text" class="form-control shadow-sm rounded-4" id="loginAccessKey" minlength="6" maxlength="255" placeholder="Masukkan access key user" autocomplete="one-time-code" data-offline-disabled="false">
+                  </div>
+                  <p class="small text-secondary">Mode user cocok untuk tim operasional yang hanya membutuhkan akses dashboard terbatas.</p>
+                  <div class="d-grid">
+                    <button type="button" class="btn btn-outline-primary shadow-sm rounded-4" onclick="undangan.admin.auth.loginUser(this)" data-offline-disabled="false">
+                      <i class="fa-solid fa-user me-2"></i>Login sebagai User </button>
+                  </div>
+                </div>
               </div>
             </form>
           </div>
