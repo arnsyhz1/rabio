@@ -46,7 +46,18 @@
     </div>
 
     <script>
-        const BASE_URL = "https://tari.erland.me";
+        const PROFILE_KEY = "wedding_profile";
+        const loadProfile = () => {
+            try {
+                return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+            } catch {
+                return {};
+            }
+        };
+        const profile = loadProfile();
+        const BASE_URL = profile.baseUrl || "https://tari.erland.me";
+        const BRIDE_NAME = profile.brideShortName || "Tari";
+        const GROOM_NAME = profile.groomShortName || "Erland";
         const MESSAGES = {
             EMPTY_NAME: "Isi dulu nama tamunya",
             NO_INVITATION: "Belum ada teks undangan yang bisa disalin",
@@ -105,7 +116,7 @@ _Assalamualaikum warahmatullahi wabarakatuh_
 
 Dengan penuh rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara pernikahan kami:
 
-Tari & Erland
+${BRIDE_NAME} & ${GROOM_NAME}
 
 Untuk informasi lengkap mengenai detail waktu dan lokasi acara, silakan klik tautan berikut:
 
