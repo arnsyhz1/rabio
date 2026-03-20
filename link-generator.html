@@ -52,6 +52,8 @@
 
     <script>
         const $ = document.getElementById.bind(document);
+        const PROFILE_KEY = "wedding_profiles_cache";
+        const API_URL = "./api/profile.php";
 
         const MESSAGES = {
             EMPTY_BASE_URL: "Isi dulu link undangannya",
@@ -66,6 +68,39 @@
             ERROR: "#ff4d4d",
             SUCCESS: "#000000"
         };
+
+        const getCachedProfile = () => {
+            try {
+                const registry = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+                const items = registry.items || {};
+                const activeSlug = registry.activeSlug;
+                return items[activeSlug] || Object.values(items)[0] || {};
+            } catch {
+                return {};
+            }
+        };
+        let profile = getCachedProfile();
+
+        const loadProfile = async () => {
+            try {
+                const response = await fetch(API_URL, { headers: { Accept: "application/json" } });
+                const result = await response.json();
+                const registry = result.data || {};
+                const items = registry.profiles || [];
+                const activeSlug = registry.activeSlug;
+                profile = items.find(item => item.slug === activeSlug) || items[0] || profile;
+            } catch {
+                profile = getCachedProfile();
+            }
+        };
+
+        const slugify = value => String(value || "")
+            .normalize('NFKD')
+            .replace(/[^\w\s-]/g, '')
+            .trim()
+            .replace(/[_\s]+/g, '-')
+            .replace(/-+/g, '-')
+            .toLowerCase();
 
         const capitalizeWords = str =>
             str.replace(/\b\w+/g, word =>
@@ -114,8 +149,9 @@
 
             const baseUrl = normalizeUrl(baseUrlRaw);
             const guestName = capitalizeWords(guestNameRaw);
+            const slug = [profile.brideShortName, profile.groomShortName].map(slugify).filter(Boolean).join('-') || 'wedding-couple';
 
-            generatedUrl.value = `${baseUrl}?to=${encodeURIComponent(guestName)}`;
+            generatedUrl.value = `${baseUrl}${slug}?to=${encodeURIComponent(guestName)}`;
         };
 
         const copyUrl = async () => {
@@ -144,6 +180,21 @@
         ["guestName", "baseUrl"].forEach(id => {
             $(id).addEventListener("input", generateUrl);
         });
+
+        const initProfile = async () => {
+            await loadProfile();
+
+            if (profile.baseUrl) {
+                $("baseUrl").value = profile.baseUrl;
+            }
+
+            generateUrl();
+        };
+
+        if (profile.baseUrl) {
+            $("baseUrl").value = profile.baseUrl;
+        }
+        initProfile();
 
         const playClickSound = () => {
             const audio = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...');
