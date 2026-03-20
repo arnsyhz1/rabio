@@ -264,6 +264,19 @@ export const admin = (() => {
     };
 
     /**
+     * @param {string=} selectedKey
+     * @returns {void}
+     */
+    const populateTemplateOptions = (selectedKey = null) => {
+        const picker = document.getElementById('premium-template-key');
+        if (!picker) {
+            return;
+        }
+
+        picker.innerHTML = weddingProfile.getTemplates().map((template) => `<option value="${template.key}" ${template.key === selectedKey ? 'selected' : ''}>${util.escapeHtml(template.name)}</option>`).join('');
+    };
+
+    /**
      * @param {object=} profileData
      * @returns {void}
      */
@@ -277,6 +290,7 @@ export const admin = (() => {
         setValue('premium-groom-full', profile.groomFullName);
         setValue('premium-bride-role', profile.brideRole);
         setValue('premium-groom-role', profile.groomRole);
+        populateTemplateOptions(profile.templateKey);
         setValue('premium-bride-parents', profile.brideParents);
         setValue('premium-groom-parents', profile.groomParents);
         setValue('premium-event-date', profile.eventDateLabel);
@@ -320,6 +334,7 @@ export const admin = (() => {
         groomFullName: document.getElementById('premium-groom-full').value,
         brideRole: document.getElementById('premium-bride-role').value,
         groomRole: document.getElementById('premium-groom-role').value,
+        templateKey: document.getElementById('premium-template-key').value,
         brideParents: document.getElementById('premium-bride-parents').value,
         groomParents: document.getElementById('premium-groom-parents').value,
         eventDateLabel: document.getElementById('premium-event-date').value,
@@ -347,10 +362,10 @@ export const admin = (() => {
      * @param {HTMLButtonElement} button
      * @returns {void}
      */
-    const savePremiumProfile = (button) => {
+    const savePremiumProfile = async (button) => {
         const originalSlug = document.getElementById('premium-profile-original-slug').value;
         const btn = util.disableButton(button, 'Saving');
-        const profile = weddingProfile.save(readPremiumForm(), originalSlug || null);
+        const profile = await weddingProfile.save(readPremiumForm(), originalSlug || null);
         syncPremiumForm(profile);
         btn.restore();
         showPremiumStatus('success', `Profile ${profile.label} saved. Public URL: ${profile.publicUrl}`);
@@ -360,13 +375,13 @@ export const admin = (() => {
      * @param {HTMLButtonElement} button
      * @returns {void}
      */
-    const resetPremiumProfile = (button) => {
+    const resetPremiumProfile = async (button) => {
         if (!confirm('Reset premium wedding profile to the default template?')) {
             return;
         }
 
         const btn = util.disableButton(button, 'Resetting');
-        const profile = weddingProfile.reset();
+        const profile = await weddingProfile.reset();
         syncPremiumForm(profile);
         btn.restore();
         showPremiumStatus('secondary', `Profile reset to template defaults. Active URL: ${profile.publicUrl}`);
@@ -375,15 +390,16 @@ export const admin = (() => {
     /**
      * @returns {void}
      */
-    const createPremiumProfile = () => {
+    const createPremiumProfile = async () => {
         const totalProfiles = weddingProfile.list().length + 1;
-        const profile = weddingProfile.save({
+        const profile = await weddingProfile.save({
             ...weddingProfile.defaults,
             brideShortName: `Pengantin Wanita ${totalProfiles}`,
             groomShortName: `Pengantin Pria ${totalProfiles}`,
             brideFullName: `Nama Lengkap Pengantin Wanita ${totalProfiles}`,
             groomFullName: `Nama Lengkap Pengantin Pria ${totalProfiles}`,
             baseUrl: weddingProfile.get().baseUrl,
+            templateKey: 'classic',
         });
         syncPremiumForm(profile);
         showPremiumStatus('secondary', `Draft pasangan baru dibuat. Silakan lengkapi detail untuk slug ${profile.slug}.`);
@@ -393,8 +409,8 @@ export const admin = (() => {
      * @param {HTMLSelectElement} select
      * @returns {void}
      */
-    const changePremiumProfile = (select) => {
-        const profile = weddingProfile.setActive(select.value);
+    const changePremiumProfile = async (select) => {
+        const profile = await weddingProfile.setActive(select.value);
         syncPremiumForm(profile);
         showPremiumStatus('secondary', `Berpindah ke profile ${profile.label}.`);
     };
@@ -403,7 +419,7 @@ export const admin = (() => {
      * @param {HTMLButtonElement} button
      * @returns {void}
      */
-    const deletePremiumProfile = (button) => {
+    const deletePremiumProfile = async (button) => {
         if (weddingProfile.list().length <= 1) {
             showPremiumStatus('secondary', 'Minimal harus ada satu profile pasangan.');
             return;
@@ -416,7 +432,7 @@ export const admin = (() => {
         }
 
         const btn = util.disableButton(button, 'Deleting');
-        const nextProfile = weddingProfile.remove(currentSlug);
+        const nextProfile = await weddingProfile.remove(currentSlug);
         syncPremiumForm(nextProfile);
         btn.restore();
         showPremiumStatus('secondary', `Profile ${currentProfile.label} deleted. Active profile sekarang ${nextProfile.label}.`);
@@ -436,11 +452,11 @@ export const admin = (() => {
     /**
      * @returns {void}
      */
-    const domLoaded = () => {
+    const domLoaded = async () => {
         offline.init();
         comment.init();
         theme.spyTop();
-        weddingProfile.init();
+        await weddingProfile.init();
         syncPremiumForm();
         document.querySelectorAll('[data-premium-sync="slug"]').forEach((field) => field.addEventListener('input', refreshGeneratedSlug));
 

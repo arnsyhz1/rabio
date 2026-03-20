@@ -46,8 +46,9 @@
     </div>
 
     <script>
-        const PROFILE_KEY = "wedding_profiles";
-        const loadProfile = () => {
+        const PROFILE_KEY = "wedding_profiles_cache";
+        const API_URL = "./api/profile.php";
+        const getCachedProfile = () => {
             try {
                 const registry = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
                 const items = registry.items || {};
@@ -57,14 +58,30 @@
                 return {};
             }
         };
-        const profile = loadProfile();
-        const BASE_URL = profile.baseUrl || "https://tari.erland.me";
-        const BRIDE_NAME = profile.brideShortName || "Tari";
-        const GROOM_NAME = profile.groomShortName || "Erland";
-        const COUPLE_SLUG = [BRIDE_NAME, GROOM_NAME]
-            .map(value => String(value).normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[_\s]+/g, '-').replace(/-+/g, '-').toLowerCase())
-            .filter(Boolean)
-            .join('-') || 'wedding-couple';
+        let profile = getCachedProfile();
+        const resolveProfileValues = () => {
+            const baseUrl = profile.baseUrl || "https://tari.erland.me";
+            const brideName = profile.brideShortName || "Tari";
+            const groomName = profile.groomShortName || "Erland";
+            const coupleSlug = [brideName, groomName]
+                .map(value => String(value).normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[_\s]+/g, '-').replace(/-+/g, '-').toLowerCase())
+                .filter(Boolean)
+                .join('-') || 'wedding-couple';
+
+            return { baseUrl, brideName, groomName, coupleSlug };
+        };
+        const loadProfile = async () => {
+            try {
+                const response = await fetch(API_URL, { headers: { Accept: "application/json" } });
+                const result = await response.json();
+                const registry = result.data || {};
+                const items = registry.profiles || [];
+                const activeSlug = registry.activeSlug;
+                profile = items.find(item => item.slug === activeSlug) || items[0] || profile;
+            } catch {
+                profile = getCachedProfile();
+            }
+        };
         const MESSAGES = {
             EMPTY_NAME: "Isi dulu nama tamunya",
             NO_INVITATION: "Belum ada teks undangan yang bisa disalin",
@@ -112,7 +129,8 @@
             }
 
             guestName = capitalizeWords(guestName);
-            const paramsUrl = `${BASE_URL.replace(/\/+$/, '')}/${COUPLE_SLUG}?to=${encodeURIComponent(guestName)}`;
+            const { baseUrl, brideName, groomName, coupleSlug } = resolveProfileValues();
+            const paramsUrl = `${baseUrl.replace(/\/+$/, '')}/${coupleSlug}?to=${encodeURIComponent(guestName)}`;
 
             getElement("invitationText").value =
 `Kepada Yth.
@@ -123,7 +141,7 @@ _Assalamualaikum warahmatullahi wabarakatuh_
 
 Dengan penuh rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara pernikahan kami:
 
-${BRIDE_NAME} & ${GROOM_NAME}
+${brideName} & ${groomName}
 
 Untuk informasi lengkap mengenai detail waktu dan lokasi acara, silakan klik tautan berikut:
 
@@ -135,6 +153,8 @@ Mohon maaf karena undangan ini kami sampaikan melalui pesan singkat.
 
 _Wassalamualaikum warahmatullahi wabarakatuh_`;
         }
+
+        loadProfile().then(generateInvitation);
 
         async function copyInvitation() {
             const invitationText = getElement("invitationText");

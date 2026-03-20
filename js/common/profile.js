@@ -20,7 +20,26 @@ const defaults = Object.freeze({
     calendarEnd: '2025-07-24 14:00:00',
     calendarLocation: 'https://maps.app.goo.gl/PtFWJys9FF6fkzhG7',
     calendarTimeZone: 'Asia/Jakarta',
+    templateKey: 'classic',
 });
+
+const templates = Object.freeze([
+    {
+        key: 'classic',
+        name: 'Classic',
+        description: 'Template clean dan netral untuk semua tema pernikahan.',
+    },
+    {
+        key: 'royal',
+        name: 'Royal Gold',
+        description: 'Template elegan dengan aksen emas dan nuansa premium.',
+    },
+    {
+        key: 'garden',
+        name: 'Garden Sage',
+        description: 'Template segar bernuansa hijau untuk konsep outdoor.',
+    },
+]);
 
 const keys = Object.freeze(Object.keys(defaults));
 
@@ -91,78 +110,76 @@ const hydrateProfile = (payload = {}) => {
     };
 };
 
+const CACHE_TABLE = 'wedding_profiles_cache';
+
 export const weddingProfile = (() => {
 
     /**
      * @type {ReturnType<typeof storage>|null}
      */
-    let registry = null;
+    let cache = null;
 
-    /**
-     * @type {ReturnType<typeof storage>|null}
-     */
-    let legacy = null;
-
-    const ensureRegistry = () => {
-        if (!registry) {
-            registry = storage('wedding_profiles');
-        }
-
-        if (!legacy) {
-            legacy = storage('wedding_profile');
-        }
-
-        if (!registry.has('items')) {
-            registry.set('items', {});
-        }
-
-        if (!registry.has('activeSlug')) {
-            registry.set('activeSlug', '');
-        }
-
-        const items = registry.get('items');
-        const hasLegacyData = Object.keys(legacy.get()).length > 0;
-
-        if (Object.keys(items).length === 0 && hasLegacyData) {
-            const migrated = hydrateProfile(legacy.get());
-            registry.set('items', { [migrated.slug]: sanitizeProfile(migrated) });
-            registry.set('activeSlug', migrated.slug);
-            legacy.clear();
-        }
-
-        if (Object.keys(registry.get('items')).length === 0) {
-            const seeded = hydrateProfile(defaults);
-            registry.set('items', { [seeded.slug]: sanitizeProfile(seeded) });
-            registry.set('activeSlug', seeded.slug);
-        }
-
-        return registry;
+    const state = {
+        activeSlug: '',
+        items: {},
+        templates: [...templates],
+        profileUrl: '',
     };
 
-    const getItems = () => ensureRegistry().get('items') ?? {};
+    const ensureCache = () => {
+        if (!cache) {
+            cache = storage(CACHE_TABLE);
+        }
 
-    const list = () => Object.values(getItems()).map(hydrateProfile);
+        return cache;
+    };
+
+    const syncCache = () => {
+        const store = ensureCache();
+        store.set('activeSlug', state.activeSlug);
+        store.set('items', state.items);
+        store.set('templates', state.templates);
+    };
+
+    const seedDefaults = () => {
+        const seeded = hydrateProfile(defaults);
+        state.items = { [seeded.slug]: sanitizeProfile(seeded) };
+        state.activeSlug = seeded.slug;
+        state.templates = [...templates];
+        syncCache();
+        return seeded;
+    };
+
+    const loadCache = () => {
+        const store = ensureCache();
+        const items = store.get('items') ?? {};
+        const activeSlug = store.get('activeSlug') ?? '';
+        const cachedTemplates = store.get('templates') ?? templates;
+
+        state.items = items;
+        state.activeSlug = activeSlug;
+        state.templates = Array.isArray(cachedTemplates) && cachedTemplates.length > 0 ? cachedTemplates : [...templates];
+
+        if (Object.keys(state.items).length === 0) {
+            seedDefaults();
+        }
+    };
+
+    const getItems = () => state.items ?? {};
 
     const has = (slug) => Object.keys(getItems()).includes(String(slug));
 
+    const list = () => Object.values(getItems()).map(hydrateProfile);
+
     const getActiveSlug = () => {
-        const activeSlug = ensureRegistry().get('activeSlug');
-        if (activeSlug && has(activeSlug)) {
-            return activeSlug;
+        if (state.activeSlug && has(state.activeSlug)) {
+            return state.activeSlug;
         }
 
-        const fallback = list()[0]?.slug ?? hydrateProfile(defaults).slug;
-        ensureRegistry().set('activeSlug', fallback);
+        const fallback = list()[0]?.slug ?? seedDefaults().slug;
+        state.activeSlug = fallback;
+        syncCache();
         return fallback;
-    };
-
-    const setActive = (slug) => {
-        if (!has(slug)) {
-            return get();
-        }
-
-        ensureRegistry().set('activeSlug', slug);
-        return get(slug);
     };
 
     const get = (slug = null) => {
@@ -170,69 +187,154 @@ export const weddingProfile = (() => {
         return hydrateProfile(getItems()[target]);
     };
 
-    const save = (payload, previousSlug = null) => {
-        const profile = hydrateProfile(payload);
-        const items = getItems();
+    const getTemplates = () => state.templates;
 
-        if (previousSlug && previousSlug !== profile.slug && items[previousSlug]) {
-            delete items[previousSlug];
+    const getProfileUrl = () => state.profileUrl || document.body?.getAttribute('data-profile-url') || './api/profile.php';
+
+    const buildPayload = () => ({
+        activeSlug: state.activeSlug,
+        profiles: list().map((profile) => ({
+            ...sanitizeProfile(profile),
+            slug: profile.slug,
+        })),
+        templates: state.templates,
+    });
+
+    const applyResponse = (payload = {}) => {
+        const profiles = Array.isArray(payload.profiles) ? payload.profiles : [];
+        state.items = profiles.reduce((result, profile) => {
+            const hydrated = hydrateProfile(profile);
+            result[hydrated.slug] = sanitizeProfile(hydrated);
+            return result;
+        }, {});
+        state.activeSlug = payload.activeSlug || profiles[0]?.slug || '';
+        state.templates = Array.isArray(payload.templates) && payload.templates.length > 0 ? payload.templates : [...templates];
+
+        if (Object.keys(state.items).length === 0) {
+            seedDefaults();
+            return;
         }
 
-        items[profile.slug] = sanitizeProfile(profile);
-        ensureRegistry().set('items', items);
-        ensureRegistry().set('activeSlug', profile.slug);
-
-        return profile;
+        syncCache();
     };
 
-    const remove = (slug) => {
-        const items = getItems();
-        if (!items[slug]) {
+    const request = async (method = 'GET', body = null) => {
+        const options = {
+            method,
+            headers: {
+                Accept: 'application/json',
+            },
+        };
+
+        if (body) {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(getProfileUrl(), options);
+        if (!response.ok) {
+            throw new Error(`Profile API request failed with status ${response.status}`);
+        }
+
+        return response.json();
+    };
+
+    const init = async () => {
+        ensureCache();
+        loadCache();
+        state.profileUrl = getProfileUrl();
+
+        try {
+            const response = await request();
+            applyResponse(response.data);
+        } catch {
+            syncCache();
+        }
+
+        return get();
+    };
+
+    const save = async (payload, previousSlug = null) => {
+        const fallback = hydrateProfile(payload);
+
+        try {
+            const response = await request('POST', {
+                action: 'save',
+                previousSlug,
+                profile: {
+                    ...sanitizeProfile(payload),
+                    slug: buildSlug(payload),
+                },
+            });
+            applyResponse(response.data.registry);
+            return get(response.data.profile.slug);
+        } catch {
+            const items = getItems();
+            if (previousSlug && previousSlug !== fallback.slug && items[previousSlug]) {
+                delete items[previousSlug];
+            }
+            items[fallback.slug] = sanitizeProfile(fallback);
+            state.activeSlug = fallback.slug;
+            syncCache();
+            return fallback;
+        }
+    };
+
+    const setActive = async (slug) => {
+        if (!has(slug)) {
             return get();
         }
 
-        delete items[slug];
-        ensureRegistry().set('items', items);
-
-        if (Object.keys(items).length === 0) {
-            const seeded = hydrateProfile(defaults);
-            ensureRegistry().set('items', { [seeded.slug]: sanitizeProfile(seeded) });
-            ensureRegistry().set('activeSlug', seeded.slug);
-            return seeded;
+        try {
+            const response = await request('POST', {
+                action: 'set-active',
+                slug,
+            });
+            applyResponse(response.data.registry);
+            return get(response.data.profile.slug);
+        } catch {
+            state.activeSlug = slug;
+            syncCache();
+            return get(slug);
         }
-
-        if (getActiveSlug() === slug) {
-            const nextSlug = Object.keys(items)[0];
-            ensureRegistry().set('activeSlug', nextSlug);
-        }
-
-        return get();
     };
 
-    const reset = (slug = null) => {
-        const targetSlug = slug && has(slug) ? slug : getActiveSlug();
-        const items = getItems();
-        const seeded = hydrateProfile(defaults);
-        items[targetSlug] = sanitizeProfile({
-            ...seeded,
-            brideShortName: seeded.brideShortName,
-            groomShortName: seeded.groomShortName,
-        });
-        ensureRegistry().set('items', items);
-        ensureRegistry().set('activeSlug', targetSlug);
-
-        if (targetSlug !== seeded.slug && !items[seeded.slug]) {
-            delete items[targetSlug];
-            items[seeded.slug] = sanitizeProfile(seeded);
-            ensureRegistry().set('items', items);
-            ensureRegistry().set('activeSlug', seeded.slug);
-            return seeded;
+    const remove = async (slug) => {
+        if (!has(slug)) {
+            return get();
         }
 
-        return get();
+        try {
+            const response = await request('POST', {
+                action: 'delete',
+                slug,
+            });
+            applyResponse(response.data.registry);
+            return get();
+        } catch {
+            delete state.items[slug];
+            if (Object.keys(state.items).length === 0) {
+                return seedDefaults();
+            }
+
+            state.activeSlug = Object.keys(state.items)[0];
+            syncCache();
+            return get();
+        }
     };
 
-    const init = () => ensureRegistry();
+    const reset = async (slug = null) => {
+        try {
+            const response = await request('POST', {
+                action: 'reset',
+                slug: slug ?? getActiveSlug(),
+            });
+            applyResponse(response.data.registry);
+            return get(response.data.profile.slug);
+        } catch {
+            return seedDefaults();
+        }
+    };
 
     const resolveFromLocation = (location = window.location) => {
         const params = new URLSearchParams(location.search);
@@ -255,8 +357,6 @@ export const weddingProfile = (() => {
     return {
         get,
         has,
-        setActive,
-        getActiveSlug,
         list,
         save,
         init,
@@ -264,6 +364,11 @@ export const weddingProfile = (() => {
         remove,
         defaults,
         buildSlug,
+        setActive,
+        getActiveSlug,
+        getTemplates,
+        getProfileUrl,
+        buildPayload,
         resolveFromLocation,
     };
 })();

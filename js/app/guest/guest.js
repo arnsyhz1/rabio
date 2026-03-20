@@ -51,6 +51,7 @@ export const guest = (() => {
         const profile = weddingProfile.resolveFromLocation();
 
         document.title = profile.heroTitle;
+        document.body.setAttribute('data-template', profile.templateKey);
 
         document.querySelector('link[rel="canonical"]')?.setAttribute('href', profile.publicUrl);
         document.querySelector('meta[property="og:url"]')?.setAttribute('content', profile.publicUrl);
@@ -317,11 +318,11 @@ export const guest = (() => {
     /**
      * @returns {void}
      */
-    const domLoaded = () => {
+    const domLoaded = async () => {
         offline.init();
         progress.init();
         information = storage('information');
-        weddingProfile.init();
+        await weddingProfile.init();
         const token = document.body.getAttribute('data-key');
 
         // document.addEventListener('progress.done', () => booting());

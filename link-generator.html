@@ -52,7 +52,8 @@
 
     <script>
         const $ = document.getElementById.bind(document);
-        const PROFILE_KEY = "wedding_profiles";
+        const PROFILE_KEY = "wedding_profiles_cache";
+        const API_URL = "./api/profile.php";
 
         const MESSAGES = {
             EMPTY_BASE_URL: "Isi dulu link undangannya",
@@ -68,7 +69,7 @@
             SUCCESS: "#000000"
         };
 
-        const loadProfile = () => {
+        const getCachedProfile = () => {
             try {
                 const registry = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
                 const items = registry.items || {};
@@ -76,6 +77,20 @@
                 return items[activeSlug] || Object.values(items)[0] || {};
             } catch {
                 return {};
+            }
+        };
+        let profile = getCachedProfile();
+
+        const loadProfile = async () => {
+            try {
+                const response = await fetch(API_URL, { headers: { Accept: "application/json" } });
+                const result = await response.json();
+                const registry = result.data || {};
+                const items = registry.profiles || [];
+                const activeSlug = registry.activeSlug;
+                profile = items.find(item => item.slug === activeSlug) || items[0] || profile;
+            } catch {
+                profile = getCachedProfile();
             }
         };
 
@@ -166,11 +181,20 @@
             $(id).addEventListener("input", generateUrl);
         });
 
-        const profile = loadProfile();
+        const initProfile = async () => {
+            await loadProfile();
+
+            if (profile.baseUrl) {
+                $("baseUrl").value = profile.baseUrl;
+            }
+
+            generateUrl();
+        };
+
         if (profile.baseUrl) {
             $("baseUrl").value = profile.baseUrl;
         }
-        generateUrl();
+        initProfile();
 
         const playClickSound = () => {
             const audio = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...');
