@@ -12,31 +12,83 @@ import { request, HTTP_GET, HTTP_PATCH, HTTP_PUT } from '../../connection/reques
 
 export const admin = (() => {
 
+    const formatNumber = (value) => String(value ?? 0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+    const getCurrentRole = () => session.isAdmin() ? 'admin' : 'user';
+
+    const setRoleUi = (role) => {
+        document.querySelectorAll('[data-role-scope]').forEach((element) => {
+            element.style.display = element.getAttribute('data-role-scope') === role ? '' : 'none';
+        });
+
+        const roleLabel = role === 'admin' ? 'Admin' : 'User';
+        const badgeClass = role === 'admin' ? 'text-bg-dark' : 'text-bg-primary';
+
+        const roleBadge = document.getElementById('dashboard-role-badge');
+        const roleChip = document.getElementById('dashboard-role-chip');
+        const roleDescription = document.getElementById('dashboard-role-description');
+
+        if (roleBadge) {
+            roleBadge.className = `badge rounded-pill ${badgeClass} px-3 py-2`;
+            roleBadge.textContent = `Role: ${roleLabel}`;
+        }
+
+        if (roleChip) {
+            roleChip.className = `badge rounded-pill ${badgeClass} px-3 py-2`;
+            roleChip.textContent = role === 'admin' ? 'Akses penuh ke dashboard' : 'Akses terbatas untuk operasional';
+        }
+
+        if (roleDescription) {
+            roleDescription.textContent = role === 'admin'
+                ? 'Admin dapat mengelola akun, access key, kontrol komentar, dan premium profile.'
+                : 'User hanya melihat workspace operasional dan tidak dapat mengubah pengaturan sensitif.';
+        }
+    };
+
+    const populateUserIdentity = (name, email = '-', accessKey = '-') => {
+        document.getElementById('dashboard-name').innerHTML = `${util.escapeHtml(name)}<i class="fa-solid fa-hands text-warning ms-2"></i>`;
+        document.getElementById('dashboard-email').innerHTML = util.escapeHtml(email);
+        document.getElementById('dashboard-accesskey').value = accessKey;
+        document.getElementById('button-copy-accesskey').setAttribute('data-copy', accessKey);
+        document.getElementById('form-name').value = util.escapeHtml(name);
+    };
+
+    const loadStats = async () => {
+        await request(HTTP_GET, '/api/stats').token(session.getToken()).send().then((res) => {
+            document.getElementById('count-comment').innerHTML = formatNumber(res.data.comments);
+            document.getElementById('count-like').innerHTML = formatNumber(res.data.likes);
+            document.getElementById('count-present').innerHTML = formatNumber(res.data.present);
+            document.getElementById('count-absent').innerHTML = formatNumber(res.data.absent);
+        }, () => {
+            document.getElementById('count-comment').innerHTML = '-';
+            document.getElementById('count-like').innerHTML = '-';
+            document.getElementById('count-present').innerHTML = '-';
+            document.getElementById('count-absent').innerHTML = '-';
+        });
+    };
+
     /**
      * @returns {Promise<void>}
      */
     const getAllRequest = async () => {
-        await auth.getDetailUser().then((res) => {
+        const role = getCurrentRole();
+        setRoleUi(role);
 
-            document.getElementById('dashboard-name').innerHTML = `${util.escapeHtml(res.data.name)}<i class="fa-solid fa-hands text-warning ms-2"></i>`;
-            document.getElementById('dashboard-email').innerHTML = res.data.email;
-            document.getElementById('dashboard-accesskey').value = res.data.access_key;
-            document.getElementById('button-copy-accesskey').setAttribute('data-copy', res.data.access_key);
+        if (role === 'admin') {
+            await auth.getDetailUser().then((res) => {
+                populateUserIdentity(res.data.name, res.data.email, res.data.access_key);
+                document.getElementById('filterBadWord').checked = Boolean(res.data.is_filter);
+                document.getElementById('replyComment').checked = Boolean(res.data.can_reply);
+                document.getElementById('editComment').checked = Boolean(res.data.can_edit);
+                document.getElementById('deleteComment').checked = Boolean(res.data.can_delete);
+            });
+        } else {
+            await session.guest();
+            const config = storage('config').get();
+            populateUserIdentity(config.name || 'User Dashboard', 'Akses via access key', session.getToken());
+        }
 
-            document.getElementById('form-name').value = util.escapeHtml(res.data.name);
-            document.getElementById('filterBadWord').checked = Boolean(res.data.is_filter);
-            document.getElementById('replyComment').checked = Boolean(res.data.can_reply);
-            document.getElementById('editComment').checked = Boolean(res.data.can_edit);
-            document.getElementById('deleteComment').checked = Boolean(res.data.can_delete);
-        });
-
-        request(HTTP_GET, '/api/stats').token(session.getToken()).send().then((res) => {
-            document.getElementById('count-comment').innerHTML = String(res.data.comments).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            document.getElementById('count-like').innerHTML = String(res.data.likes).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            document.getElementById('count-present').innerHTML = String(res.data.present).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            document.getElementById('count-absent').innerHTML = String(res.data.absent).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        });
-
+        await loadStats();
         comment.show();
     };
 
@@ -353,9 +405,8 @@ export const admin = (() => {
     const refreshGeneratedSlug = () => {
         const draft = readPremiumForm();
         const slug = weddingProfile.buildSlug(draft);
-        const baseUrl = String(draft.baseUrl || weddingProfile.defaults.baseUrl).replace(/\/+$/, '');
         setValue('premium-generated-slug', slug);
-        setValue('premium-generated-url', `${baseUrl}/${slug}`);
+        setValue('premium-generated-url', weddingProfile.buildPublicUrl(draft.baseUrl || weddingProfile.defaults.baseUrl, slug));
     };
 
     /**
@@ -469,12 +520,19 @@ export const admin = (() => {
                 window.history.replaceState({}, document.title, raw[0]);
             }
 
-            const exp = session.decode()?.exp;
-            if (!exp || exp < (Date.now() / 1000)) {
+            const token = session.getToken();
+            if (!token) {
                 throw new Error('Invalid token');
             }
 
-            getAllRequest();
+            if (session.isAdmin()) {
+                const exp = session.decode()?.exp;
+                if (!exp || exp < (Date.now() / 1000)) {
+                    throw new Error('Invalid token');
+                }
+            }
+
+            await getAllRequest();
         } catch {
             auth.clearSession();
         }
@@ -489,7 +547,7 @@ export const admin = (() => {
         session.init();
         weddingProfile.init();
 
-        if (!session.isAdmin()) {
+        if (!session.getToken()) {
             storage('owns').clear();
             storage('likes').clear();
             storage('config').clear();

@@ -63,9 +63,14 @@
       <!-- Header -->
       <div class="d-none d-sm-flex justify-content-between align-items-center mt-4 mb-5 pt-1">
         <h4 class="m-0 p-0 flex-grow-1 fw-bold">Dashboard Undangan</h4>
-        <div class="m-0 p-0 flex-grow-1 text-end" id="dashboard-name" style="font-size: 1.4rem;">
-          <div class="placeholder-wave">
-            <span class="placeholder col-6 rounded-4"></span>
+        <div class="m-0 p-0 flex-grow-1 text-end">
+          <div id="dashboard-name" style="font-size: 1.4rem;">
+            <div class="placeholder-wave">
+              <span class="placeholder col-6 rounded-4"></span>
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="badge rounded-pill text-bg-dark px-3 py-2" id="dashboard-role-badge">Role: -</span>
           </div>
         </div>
       </div>
@@ -205,6 +210,15 @@
                   </div>
                 </div>
               </div>
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="admin">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                  <div>
+                    <p class="mx-0 mt-0 mb-1 p-0 fw-bold"><i class="fa-solid fa-user-shield me-2"></i>Akses Dashboard</p>
+                    <p class="m-0 p-0 text-secondary" id="dashboard-role-description">Hak akses akan menyesuaikan role login Anda.</p>
+                  </div>
+                  <span class="badge rounded-pill text-bg-primary px-3 py-2" id="dashboard-role-chip">Memuat role...</span>
+                </div>
+              </div>
               <!-- Form -->
               <div class="bg-theme-auto p-3 mt-2 rounded-4 shadow">
                 <label for="form-comment" class="form-label fw-bold my-1">
@@ -228,6 +242,12 @@
                   <i class="fa-solid fa-gear mx-2"></i>Setting
                 </h5>
               </div>
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="user" style="display: none;">
+                <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
+                  <i class="fa-solid fa-circle-info me-2"></i>User Workspace
+                </p>
+                <p class="m-0 p-0 text-secondary">Mode user difokuskan untuk operasional harian. Pengaturan sensitif seperti access key, password, dan premium profile hanya tampil untuk admin.</p>
+              </div>
               <!-- Email -->
               <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
                 <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
@@ -236,7 +256,7 @@
                 <p class="m-0 p-0" id="dashboard-email"></p>
               </div>
               <!-- Name -->
-              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="admin">
                 <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
                   <i class="fa-solid fa-person me-2"></i>Name
                 </p>
@@ -250,7 +270,7 @@
                 </div>
               </div>
               <!-- Access Key -->
-              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="admin">
                 <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
                   <i class="fa-solid fa-key me-2"></i>Access Key
                 </p>
@@ -265,7 +285,7 @@
                 </div>
               </div>
               <!-- Toggle -->
-              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="admin">
                 <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
                   <i class="fa-solid fa-sliders me-2"></i>Control
                 </p>
@@ -287,7 +307,7 @@
                 </div>
               </div>
               <!-- Change Password -->
-              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow">
+              <div class="p-3 bg-theme-auto mb-3 rounded-4 shadow" data-role-scope="admin">
                 <p class="mx-0 mt-0 mb-1 p-0 fw-bold">
                   <i class="fa-solid fa-lock me-2"></i>Change Password
                 </p>
@@ -312,7 +332,7 @@
                   </p>
                   <span class="badge text-bg-warning text-dark rounded-pill px-3 py-2">CMS Lite</span>
                 </div>
-                <p class="small text-secondary mb-3">Kelola banyak pasangan sekaligus dari dashboard. Slug pasangan akan dibuat otomatis dari nama pengantin dan dipakai untuk link publik seperti <code>rabio.com/nama-mempelai</code>.</p>
+                <p class="small text-secondary mb-3">Kelola banyak pasangan sekaligus dari dashboard. Slug pasangan akan dibuat otomatis dari nama pengantin dan dipakai untuk link publik seperti <code>rabio.com/invitation.html?wedding=nama-mempelai</code>.</p>
                 <input type="hidden" id="premium-profile-original-slug">
                 <div class="row g-3">
                   <div class="col-12">
@@ -434,19 +454,43 @@
         <div class="modal-content rounded-4">
           <div class="modal-body">
             <form>
-              <div class="mb-3">
-                <label for="loginEmail" class="form-label my-1">
-                  <i class="fa-solid fa-envelope me-2"></i>Email </label>
-                <input type="email" class="form-control shadow-sm rounded-4" id="loginEmail" minlength="5" maxlength="254" placeholder="Masukkan email Anda" required autocomplete="email" data-offline-disabled="false">
-              </div>
-              <div class="mb-3">
-                <label for="loginPassword" class="form-label my-1">
-                  <i class="fa-solid fa-lock me-2"></i>Password </label>
-                <input type="password" class="form-control shadow-sm rounded-4" id="loginPassword" minlength="8" maxlength="20" placeholder="Masukkan password Anda" required autocomplete="current-password" data-offline-disabled="false">
-              </div>
-              <div class="d-grid">
-                <button type="submit" class="btn btn-primary shadow-sm rounded-4" onclick="undangan.admin.auth.login(this)" data-offline-disabled="false">
-                  <i class="fa-solid fa-right-to-bracket me-2"></i>Login </button>
+              <ul class="nav nav-pills nav-fill gap-2 mb-4" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active rounded-4" data-bs-toggle="pill" data-bs-target="#login-admin-pane" type="button" role="tab">Admin</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link rounded-4" data-bs-toggle="pill" data-bs-target="#login-user-pane" type="button" role="tab">User</button>
+                </li>
+              </ul>
+              <div class="tab-content">
+                <div class="tab-pane fade show active" id="login-admin-pane" role="tabpanel" tabindex="0">
+                  <div class="mb-3">
+                    <label for="loginEmail" class="form-label my-1">
+                      <i class="fa-solid fa-envelope me-2"></i>Email </label>
+                    <input type="email" class="form-control shadow-sm rounded-4" id="loginEmail" minlength="5" maxlength="254" placeholder="Masukkan email admin" autocomplete="email" data-offline-disabled="false">
+                  </div>
+                  <div class="mb-3">
+                    <label for="loginPassword" class="form-label my-1">
+                      <i class="fa-solid fa-lock me-2"></i>Password </label>
+                    <input type="password" class="form-control shadow-sm rounded-4" id="loginPassword" minlength="8" maxlength="20" placeholder="Masukkan password admin" autocomplete="current-password" data-offline-disabled="false">
+                  </div>
+                  <div class="d-grid">
+                    <button type="button" class="btn btn-primary shadow-sm rounded-4" onclick="undangan.admin.auth.loginAdmin(this)" data-offline-disabled="false">
+                      <i class="fa-solid fa-right-to-bracket me-2"></i>Login sebagai Admin </button>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="login-user-pane" role="tabpanel" tabindex="0">
+                  <div class="mb-3">
+                    <label for="loginAccessKey" class="form-label my-1">
+                      <i class="fa-solid fa-key me-2"></i>Access Key / Token User </label>
+                    <input type="text" class="form-control shadow-sm rounded-4" id="loginAccessKey" minlength="6" maxlength="255" placeholder="Masukkan access key user" autocomplete="one-time-code" data-offline-disabled="false">
+                  </div>
+                  <p class="small text-secondary">Mode user cocok untuk tim operasional yang hanya membutuhkan akses dashboard terbatas.</p>
+                  <div class="d-grid">
+                    <button type="button" class="btn btn-outline-primary shadow-sm rounded-4" onclick="undangan.admin.auth.loginUser(this)" data-offline-disabled="false">
+                      <i class="fa-solid fa-user me-2"></i>Login sebagai User </button>
+                  </div>
+                </div>
               </div>
             </form>
           </div>

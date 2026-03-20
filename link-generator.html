@@ -152,7 +152,7 @@
             const guestName = capitalizeWords(guestNameRaw);
             const slug = [profile.brideShortName, profile.groomShortName].map(slugify).filter(Boolean).join('-') || 'wedding-couple';
 
-            generatedUrl.value = `${baseUrl}${slug}?to=${encodeURIComponent(guestName)}`;
+            generatedUrl.value = `${baseUrl}invitation.html?wedding=${encodeURIComponent(slug)}&to=${encodeURIComponent(guestName)}`;
         };
 
         const copyUrl = async () => {

@@ -130,7 +130,7 @@
 
             guestName = capitalizeWords(guestName);
             const { baseUrl, brideName, groomName, coupleSlug } = resolveProfileValues();
-            const paramsUrl = `${baseUrl.replace(/\/+$/, '')}/${coupleSlug}?to=${encodeURIComponent(guestName)}`;
+            const paramsUrl = `${baseUrl.replace(/\/+$/, '')}/invitation.html?wedding=${encodeURIComponent(coupleSlug)}&to=${encodeURIComponent(guestName)}`;
 
             getElement("invitationText").value =
 `Kepada Yth.

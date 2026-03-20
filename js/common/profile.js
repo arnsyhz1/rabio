@@ -56,6 +56,7 @@ const templates = Object.freeze([
 ]);
 
 const keys = Object.freeze(Object.keys(defaults));
+const invitationPage = 'invitation.html';
 
 const toSlugPart = (value) => String(value ?? '')
     .normalize('NFKD')
@@ -85,6 +86,7 @@ const normalizeValue = (key, value) => {
 };
 
 const normalizeBaseUrl = (url) => String(url || resolveSiteBaseUrl()).replace(/\/+$/, '');
+const buildPublicUrl = (baseUrl, slug) => `${normalizeBaseUrl(baseUrl)}/${invitationPage}?wedding=${encodeURIComponent(slug)}`;
 
 const toDisplayNames = (profile) => ({
     coupleShortDisplay: `${profile.brideShortName} & ${profile.groomShortName}`,
@@ -106,7 +108,7 @@ const hydrateProfile = (payload = {}) => {
     const { coupleShortDisplay, coupleShortText } = toDisplayNames(profile);
     const slug = buildSlug(profile);
     const baseUrl = normalizeBaseUrl(profile.baseUrl);
-    const publicUrl = `${baseUrl}/${slug}`;
+    const publicUrl = buildPublicUrl(baseUrl, slug);
 
     return {
         ...profile,
@@ -359,7 +361,7 @@ export const weddingProfile = (() => {
 
         const segments = location.pathname.split('/').filter(Boolean);
         const lastSegment = segments.at(-1);
-        const reserved = ['index.html', 'dashboard.html', 'link-generator.html', 'text-generator.html'];
+        const reserved = ['index.html', 'dashboard.html', 'link-generator.html', 'text-generator.html', invitationPage];
 
         if (lastSegment && !reserved.includes(lastSegment) && has(lastSegment)) {
             return get(lastSegment);
@@ -378,6 +380,7 @@ export const weddingProfile = (() => {
         remove,
         defaults,
         buildSlug,
+        buildPublicUrl,
         setActive,
         getActiveSlug,
         getTemplates,
