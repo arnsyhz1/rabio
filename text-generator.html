@@ -46,7 +46,25 @@
     </div>
 
     <script>
-        const BASE_URL = "https://tari.erland.me";
+        const PROFILE_KEY = "wedding_profiles";
+        const loadProfile = () => {
+            try {
+                const registry = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+                const items = registry.items || {};
+                const activeSlug = registry.activeSlug;
+                return items[activeSlug] || Object.values(items)[0] || {};
+            } catch {
+                return {};
+            }
+        };
+        const profile = loadProfile();
+        const BASE_URL = profile.baseUrl || "https://tari.erland.me";
+        const BRIDE_NAME = profile.brideShortName || "Tari";
+        const GROOM_NAME = profile.groomShortName || "Erland";
+        const COUPLE_SLUG = [BRIDE_NAME, GROOM_NAME]
+            .map(value => String(value).normalize('NFKD').replace(/[^\w\s-]/g, '').trim().replace(/[_\s]+/g, '-').replace(/-+/g, '-').toLowerCase())
+            .filter(Boolean)
+            .join('-') || 'wedding-couple';
         const MESSAGES = {
             EMPTY_NAME: "Isi dulu nama tamunya",
             NO_INVITATION: "Belum ada teks undangan yang bisa disalin",
@@ -94,7 +112,7 @@
             }
 
             guestName = capitalizeWords(guestName);
-            const paramsUrl = `${BASE_URL}/?to=${encodeURIComponent(guestName)}`;
+            const paramsUrl = `${BASE_URL.replace(/\/+$/, '')}/${COUPLE_SLUG}?to=${encodeURIComponent(guestName)}`;
 
             getElement("invitationText").value =
 `Kepada Yth.
@@ -105,7 +123,7 @@ _Assalamualaikum warahmatullahi wabarakatuh_
 
 Dengan penuh rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dalam acara pernikahan kami:
 
-Tari & Erland
+${BRIDE_NAME} & ${GROOM_NAME}
 
 Untuk informasi lengkap mengenai detail waktu dan lokasi acara, silakan klik tautan berikut:
 

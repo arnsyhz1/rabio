@@ -7,6 +7,7 @@ import { theme } from '../../common/theme.js';
 import { storage } from '../../common/storage.js';
 import { session } from '../../common/session.js';
 import { offline } from '../../common/offline.js';
+import { weddingProfile } from '../../common/profile.js';
 import { comment } from '../component/comment.js';
 import { basicAnimation, openAnimation } from '../../libs/confetti.js';
 
@@ -16,6 +17,76 @@ export const guest = (() => {
      * @type {ReturnType<typeof storage>|null}
      */
     let information = null;
+
+    /**
+     * @param {string} id
+     * @param {string} value
+     * @returns {void}
+     */
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.textContent = value;
+        }
+    };
+
+    /**
+     * @param {string} id
+     * @param {string} value
+     * @returns {void}
+     */
+    const setMultiline = (id, value) => {
+        const el = document.getElementById(id);
+        if (!el) {
+            return;
+        }
+
+        el.innerHTML = util.escapeHtml(value).replace(/\n/g, '<br>');
+    };
+
+    /**
+     * @returns {void}
+     */
+    const applyProfile = () => {
+        const profile = weddingProfile.resolveFromLocation();
+
+        document.title = profile.heroTitle;
+
+        document.querySelector('link[rel="canonical"]')?.setAttribute('href', profile.publicUrl);
+        document.querySelector('meta[property="og:url"]')?.setAttribute('content', profile.publicUrl);
+
+        document.querySelectorAll('meta[name="title"], meta[property="og:title"], meta[property="og:image:alt"], meta[property="og:site_name"], meta[name="apple-mobile-web-app-title"]').forEach((meta) => {
+            meta.setAttribute('content', profile.heroTitle);
+        });
+
+        document.querySelectorAll('meta[name="description"], meta[property="og:description"]').forEach((meta) => {
+            meta.setAttribute('content', profile.invitationDescription);
+        });
+
+        setText('desktop-badge', profile.desktopBadge);
+        setText('desktop-summary', profile.desktopSummary);
+        setText('hero-label', profile.invitationLabel);
+        setText('hero-couple', profile.coupleShortDisplay);
+        setText('hero-date', profile.eventDateLabel);
+        setText('bride-full-name', profile.brideFullName);
+        setText('groom-full-name', profile.groomFullName);
+        setText('bride-role', profile.brideRole);
+        setText('groom-role', profile.groomRole);
+        setText('welcome-couple', profile.welcomeCouple);
+        setText('invitation-intro', profile.invitationIntro);
+        setMultiline('bride-parents', profile.brideParents);
+        setMultiline('groom-parents', profile.groomParents);
+
+        const countdown = document.getElementById('count-down');
+        if (countdown) {
+            countdown.setAttribute('data-time', profile.calendarStart);
+        }
+
+        const guestName = document.getElementById('guest-name');
+        if (guestName) {
+            guestName.setAttribute('data-message', profile.guestSalutation);
+        }
+    };
 
     /**
      * @returns {void}
@@ -153,6 +224,8 @@ export const guest = (() => {
      * @returns {void}
      */
     const buildGoogleCalendar = () => {
+        const profile = weddingProfile.resolveFromLocation();
+
         /**
          * @param {string} d 
          * @returns {string}
@@ -163,14 +236,35 @@ export const guest = (() => {
             const url = new URL('https://calendar.google.com/calendar/render');
             const data = {
                 action: 'TEMPLATE',
-                text: 'The Wedding of Tari and Erland',
-                dates: `${formatDate('2025-07-24 10:00')}/${formatDate('2025-07-24 14:00')}`,
-                details: 'Tanpa mengurangi rasa hormat, dengan ini kami mengundang Bapak/Ibu/Saudara/i untuk hadir pada acara pernikahan kami.',
-                location: 'https://maps.app.goo.gl/PtFWJys9FF6fkzhG7',
-                ctz: 'Asia/Jakarta',
+                text: profile.calendarTitle,
+                dates: `${formatDate(profile.calendarStart)}/${formatDate(profile.calendarEnd)}`,
+                details: profile.invitationIntro,
+                location: profile.calendarLocation,
+                ctz: profile.calendarTimeZone,
             };
             Object.entries(data).forEach(([k, v]) => url.searchParams.set(k, v));
             return url.toString();
+        };
+
+        const buildICS = () => {
+            const formatICSDate = (d) => new Date(d.replace(' ', 'T')).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            const normalizeLine = (value) => String(value).replace(/\n/g, '\\n').replace(/,/g, '\\,');
+
+            return [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Rabio Premium Wedding//EN',
+                'BEGIN:VEVENT',
+                `UID:${Date.now()}@rabio-premium`,
+                `DTSTAMP:${formatICSDate(profile.calendarStart)}`,
+                `DTSTART:${formatICSDate(profile.calendarStart)}`,
+                `DTEND:${formatICSDate(profile.calendarEnd)}`,
+                `SUMMARY:${normalizeLine(profile.calendarTitle)}`,
+                `DESCRIPTION:${normalizeLine(profile.invitationIntro)}`,
+                `LOCATION:${normalizeLine(profile.calendarLocation)}`,
+                'END:VEVENT',
+                'END:VCALENDAR',
+            ].join('\r\n');
         };
 
         const isAppleDevice = () => {
@@ -180,20 +274,24 @@ export const guest = (() => {
 
         document.querySelector('#addToCalendar')?.addEventListener('click', () => {
             if (isAppleDevice()) {
-                window.location.href = 'https://tari.erland.me/wedding.ics'; // iOS / macOS → Apple Calendar
+                const file = new Blob([buildICS()], { type: 'text/calendar;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(file);
+                link.download = `${profile.coupleShortText.replace(/\s+/g, '-').toLowerCase()}-premium.ics`;
+                link.click();
+                URL.revokeObjectURL(link.href);
             } else {
                 const url = buildGoogleCalendarURL();
-                window.open(url, '_blank'); // Android / lainnya → Google Calendar
+                window.open(url, '_blank');
             }
         });
     };
-
-    document.addEventListener('DOMContentLoaded', buildGoogleCalendar);
 
     /**
      * @returns {void}
      */
     const booting = () => {
+        applyProfile();
         animateSvg();
         countDownDate();
         showGuestName();
@@ -223,6 +321,7 @@ export const guest = (() => {
         offline.init();
         progress.init();
         information = storage('information');
+        weddingProfile.init();
         const token = document.body.getAttribute('data-key');
 
         // document.addEventListener('progress.done', () => booting());
