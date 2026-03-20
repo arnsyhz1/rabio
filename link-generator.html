@@ -52,7 +52,7 @@
 
     <script>
         const $ = document.getElementById.bind(document);
-        const PROFILE_KEY = "wedding_profile";
+        const PROFILE_KEY = "wedding_profiles";
 
         const MESSAGES = {
             EMPTY_BASE_URL: "Isi dulu link undangannya",
@@ -70,11 +70,22 @@
 
         const loadProfile = () => {
             try {
-                return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+                const registry = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+                const items = registry.items || {};
+                const activeSlug = registry.activeSlug;
+                return items[activeSlug] || Object.values(items)[0] || {};
             } catch {
                 return {};
             }
         };
+
+        const slugify = value => String(value || "")
+            .normalize('NFKD')
+            .replace(/[^\w\s-]/g, '')
+            .trim()
+            .replace(/[_\s]+/g, '-')
+            .replace(/-+/g, '-')
+            .toLowerCase();
 
         const capitalizeWords = str =>
             str.replace(/\b\w+/g, word =>
@@ -123,8 +134,9 @@
 
             const baseUrl = normalizeUrl(baseUrlRaw);
             const guestName = capitalizeWords(guestNameRaw);
+            const slug = [profile.brideShortName, profile.groomShortName].map(slugify).filter(Boolean).join('-') || 'wedding-couple';
 
-            generatedUrl.value = `${baseUrl}?to=${encodeURIComponent(guestName)}`;
+            generatedUrl.value = `${baseUrl}${slug}?to=${encodeURIComponent(guestName)}`;
         };
 
         const copyUrl = async () => {

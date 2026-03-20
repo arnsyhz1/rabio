@@ -312,8 +312,17 @@
                   </p>
                   <span class="badge text-bg-warning text-dark rounded-pill px-3 py-2">CMS Lite</span>
                 </div>
-                <p class="small text-secondary mb-3">Edit identitas mempelai, branding undangan, dan detail premium langsung dari dashboard. Perubahan tersimpan di browser ini dan langsung dipakai oleh halaman undangan serta generator.</p>
+                <p class="small text-secondary mb-3">Kelola banyak pasangan sekaligus dari dashboard. Slug pasangan akan dibuat otomatis dari nama pengantin dan dipakai untuk link publik seperti <code>rabio.com/nama-mempelai</code>.</p>
+                <input type="hidden" id="premium-profile-original-slug">
                 <div class="row g-3">
+                  <div class="col-12">
+                    <label class="form-label fw-semibold" for="premium-profile-picker">Pilih Pasangan</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                      <select class="form-select form-select-sm rounded-4 shadow-sm" id="premium-profile-picker" onchange="undangan.admin.changePremiumProfile(this)"></select>
+                      <button type="button" class="btn btn-sm btn-outline-primary rounded-4 shadow-sm" onclick="undangan.admin.createPremiumProfile()">Pasangan Baru</button>
+                      <button type="button" class="btn btn-sm btn-outline-danger rounded-4 shadow-sm" onclick="undangan.admin.deletePremiumProfile(this)">Hapus</button>
+                    </div>
+                  </div>
                   <div class="col-12 col-lg-6">
                     <label class="form-label fw-semibold" for="premium-invitation-label">Invitation Label</label>
                     <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-invitation-label" maxlength="60">
@@ -324,11 +333,11 @@
                   </div>
                   <div class="col-12 col-lg-6">
                     <label class="form-label fw-semibold" for="premium-bride-short">Bride Short Name</label>
-                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-bride-short" maxlength="40">
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-bride-short" maxlength="40" data-premium-sync="slug">
                   </div>
                   <div class="col-12 col-lg-6">
                     <label class="form-label fw-semibold" for="premium-groom-short">Groom Short Name</label>
-                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-groom-short" maxlength="40">
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-groom-short" maxlength="40" data-premium-sync="slug">
                   </div>
                   <div class="col-12 col-lg-6">
                     <label class="form-label fw-semibold" for="premium-bride-full">Bride Full Name</label>
@@ -368,7 +377,15 @@
                   </div>
                   <div class="col-12">
                     <label class="form-label fw-semibold" for="premium-base-url">Base URL</label>
-                    <input type="url" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-base-url" maxlength="200">
+                    <input type="url" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-base-url" maxlength="200" data-premium-sync="slug">
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-generated-slug">Generated Slug</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-generated-slug" readonly>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <label class="form-label fw-semibold" for="premium-generated-url">Public URL</label>
+                    <input type="text" class="form-control form-control-sm rounded-4 shadow-sm" id="premium-generated-url" readonly>
                   </div>
                   <div class="col-12 col-lg-6">
                     <label class="form-label fw-semibold" for="premium-calendar-title">Calendar Title</label>

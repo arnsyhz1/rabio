@@ -48,9 +48,12 @@ export const guest = (() => {
      * @returns {void}
      */
     const applyProfile = () => {
-        const profile = weddingProfile.get();
+        const profile = weddingProfile.resolveFromLocation();
 
         document.title = profile.heroTitle;
+
+        document.querySelector('link[rel="canonical"]')?.setAttribute('href', profile.publicUrl);
+        document.querySelector('meta[property="og:url"]')?.setAttribute('content', profile.publicUrl);
 
         document.querySelectorAll('meta[name="title"], meta[property="og:title"], meta[property="og:image:alt"], meta[property="og:site_name"], meta[name="apple-mobile-web-app-title"]').forEach((meta) => {
             meta.setAttribute('content', profile.heroTitle);
@@ -221,7 +224,7 @@ export const guest = (() => {
      * @returns {void}
      */
     const buildGoogleCalendar = () => {
-        const profile = weddingProfile.get();
+        const profile = weddingProfile.resolveFromLocation();
 
         /**
          * @param {string} d 

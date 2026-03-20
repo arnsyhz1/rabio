@@ -253,8 +253,22 @@ export const admin = (() => {
     /**
      * @returns {void}
      */
-    const syncPremiumForm = () => {
-        const profile = weddingProfile.get();
+    const populateProfileOptions = (selectedSlug = null) => {
+        const picker = document.getElementById('premium-profile-picker');
+        if (!picker) {
+            return;
+        }
+
+        const activeSlug = selectedSlug ?? weddingProfile.getActiveSlug();
+        picker.innerHTML = weddingProfile.list().map((profile) => `<option value="${profile.slug}" ${profile.slug === activeSlug ? 'selected' : ''}>${util.escapeHtml(profile.label)} (${util.escapeHtml(profile.slug)})</option>`).join('');
+    };
+
+    /**
+     * @param {object=} profileData
+     * @returns {void}
+     */
+    const syncPremiumForm = (profileData = null) => {
+        const profile = profileData ?? weddingProfile.get();
         setValue('premium-invitation-label', profile.invitationLabel);
         setValue('premium-desktop-badge', profile.desktopBadge);
         setValue('premium-bride-short', profile.brideShortName);
@@ -273,6 +287,10 @@ export const admin = (() => {
         setValue('premium-calendar-start', profile.calendarStart);
         setValue('premium-calendar-end', profile.calendarEnd);
         setValue('premium-calendar-location', profile.calendarLocation);
+        setValue('premium-profile-original-slug', profile.slug);
+        setValue('premium-generated-slug', profile.slug);
+        setValue('premium-generated-url', profile.publicUrl);
+        populateProfileOptions(profile.slug);
     };
 
     /**
@@ -315,15 +333,27 @@ export const admin = (() => {
     });
 
     /**
+     * @returns {void}
+     */
+    const refreshGeneratedSlug = () => {
+        const draft = readPremiumForm();
+        const slug = weddingProfile.buildSlug(draft);
+        const baseUrl = String(draft.baseUrl || weddingProfile.defaults.baseUrl).replace(/\/+$/, '');
+        setValue('premium-generated-slug', slug);
+        setValue('premium-generated-url', `${baseUrl}/${slug}`);
+    };
+
+    /**
      * @param {HTMLButtonElement} button
      * @returns {void}
      */
     const savePremiumProfile = (button) => {
+        const originalSlug = document.getElementById('premium-profile-original-slug').value;
         const btn = util.disableButton(button, 'Saving');
-        weddingProfile.set(readPremiumForm());
-        syncPremiumForm();
+        const profile = weddingProfile.save(readPremiumForm(), originalSlug || null);
+        syncPremiumForm(profile);
         btn.restore();
-        showPremiumStatus('success', 'Premium wedding profile saved. Invitation and generators now use the updated couple data on this browser.');
+        showPremiumStatus('success', `Profile ${profile.label} saved. Public URL: ${profile.publicUrl}`);
     };
 
     /**
@@ -336,10 +366,60 @@ export const admin = (() => {
         }
 
         const btn = util.disableButton(button, 'Resetting');
-        weddingProfile.reset();
-        syncPremiumForm();
+        const profile = weddingProfile.reset();
+        syncPremiumForm(profile);
         btn.restore();
-        showPremiumStatus('secondary', 'Premium wedding profile restored to the template defaults.');
+        showPremiumStatus('secondary', `Profile reset to template defaults. Active URL: ${profile.publicUrl}`);
+    };
+
+    /**
+     * @returns {void}
+     */
+    const createPremiumProfile = () => {
+        const totalProfiles = weddingProfile.list().length + 1;
+        const profile = weddingProfile.save({
+            ...weddingProfile.defaults,
+            brideShortName: `Pengantin Wanita ${totalProfiles}`,
+            groomShortName: `Pengantin Pria ${totalProfiles}`,
+            brideFullName: `Nama Lengkap Pengantin Wanita ${totalProfiles}`,
+            groomFullName: `Nama Lengkap Pengantin Pria ${totalProfiles}`,
+            baseUrl: weddingProfile.get().baseUrl,
+        });
+        syncPremiumForm(profile);
+        showPremiumStatus('secondary', `Draft pasangan baru dibuat. Silakan lengkapi detail untuk slug ${profile.slug}.`);
+    };
+
+    /**
+     * @param {HTMLSelectElement} select
+     * @returns {void}
+     */
+    const changePremiumProfile = (select) => {
+        const profile = weddingProfile.setActive(select.value);
+        syncPremiumForm(profile);
+        showPremiumStatus('secondary', `Berpindah ke profile ${profile.label}.`);
+    };
+
+    /**
+     * @param {HTMLButtonElement} button
+     * @returns {void}
+     */
+    const deletePremiumProfile = (button) => {
+        if (weddingProfile.list().length <= 1) {
+            showPremiumStatus('secondary', 'Minimal harus ada satu profile pasangan.');
+            return;
+        }
+
+        const currentSlug = document.getElementById('premium-profile-original-slug').value;
+        const currentProfile = weddingProfile.get(currentSlug);
+        if (!confirm(`Delete profile ${currentProfile.label}?`)) {
+            return;
+        }
+
+        const btn = util.disableButton(button, 'Deleting');
+        const nextProfile = weddingProfile.remove(currentSlug);
+        syncPremiumForm(nextProfile);
+        btn.restore();
+        showPremiumStatus('secondary', `Profile ${currentProfile.label} deleted. Active profile sekarang ${nextProfile.label}.`);
     };
 
     /**
@@ -362,6 +442,7 @@ export const admin = (() => {
         theme.spyTop();
         weddingProfile.init();
         syncPremiumForm();
+        document.querySelectorAll('[data-premium-sync="slug"]').forEach((field) => field.addEventListener('input', refreshGeneratedSlug));
 
         document.addEventListener('hidden.bs.modal', getAllRequest);
 
@@ -421,6 +502,9 @@ export const admin = (() => {
                 changeFilterBadWord,
                 enableButtonName,
                 enableButtonPassword,
+                createPremiumProfile,
+                changePremiumProfile,
+                deletePremiumProfile,
                 savePremiumProfile,
                 resetPremiumProfile,
             },
