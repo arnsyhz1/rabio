@@ -6,6 +6,7 @@ import { theme } from '../../common/theme.js';
 import { storage } from '../../common/storage.js';
 import { session } from '../../common/session.js';
 import { offline } from '../../common/offline.js';
+import { weddingProfile } from '../../common/profile.js';
 import { comment } from '../component/comment.js';
 import { request, HTTP_GET, HTTP_PATCH, HTTP_PUT } from '../../connection/request.js';
 
@@ -238,6 +239,110 @@ export const admin = (() => {
     };
 
     /**
+     * @param {string} id
+     * @param {string} value
+     * @returns {void}
+     */
+    const setValue = (id, value) => {
+        const field = document.getElementById(id);
+        if (field) {
+            field.value = value;
+        }
+    };
+
+    /**
+     * @returns {void}
+     */
+    const syncPremiumForm = () => {
+        const profile = weddingProfile.get();
+        setValue('premium-invitation-label', profile.invitationLabel);
+        setValue('premium-desktop-badge', profile.desktopBadge);
+        setValue('premium-bride-short', profile.brideShortName);
+        setValue('premium-groom-short', profile.groomShortName);
+        setValue('premium-bride-full', profile.brideFullName);
+        setValue('premium-groom-full', profile.groomFullName);
+        setValue('premium-bride-role', profile.brideRole);
+        setValue('premium-groom-role', profile.groomRole);
+        setValue('premium-bride-parents', profile.brideParents);
+        setValue('premium-groom-parents', profile.groomParents);
+        setValue('premium-event-date', profile.eventDateLabel);
+        setValue('premium-guest-salutation', profile.guestSalutation);
+        setValue('premium-intro', profile.invitationIntro);
+        setValue('premium-base-url', profile.baseUrl);
+        setValue('premium-calendar-title', profile.calendarTitle);
+        setValue('premium-calendar-start', profile.calendarStart);
+        setValue('premium-calendar-end', profile.calendarEnd);
+        setValue('premium-calendar-location', profile.calendarLocation);
+    };
+
+    /**
+     * @param {'success'|'secondary'} mode
+     * @param {string} message
+     * @returns {void}
+     */
+    const showPremiumStatus = (mode, message) => {
+        const status = document.getElementById('premium-status');
+        if (!status) {
+            return;
+        }
+
+        status.className = `alert alert-${mode} rounded-4 py-2 px-3 mt-3 mb-0`;
+        status.textContent = message;
+    };
+
+    /**
+     * @returns {object}
+     */
+    const readPremiumForm = () => ({
+        invitationLabel: document.getElementById('premium-invitation-label').value,
+        desktopBadge: document.getElementById('premium-desktop-badge').value,
+        brideShortName: document.getElementById('premium-bride-short').value,
+        groomShortName: document.getElementById('premium-groom-short').value,
+        brideFullName: document.getElementById('premium-bride-full').value,
+        groomFullName: document.getElementById('premium-groom-full').value,
+        brideRole: document.getElementById('premium-bride-role').value,
+        groomRole: document.getElementById('premium-groom-role').value,
+        brideParents: document.getElementById('premium-bride-parents').value,
+        groomParents: document.getElementById('premium-groom-parents').value,
+        eventDateLabel: document.getElementById('premium-event-date').value,
+        guestSalutation: document.getElementById('premium-guest-salutation').value,
+        invitationIntro: document.getElementById('premium-intro').value,
+        baseUrl: document.getElementById('premium-base-url').value,
+        calendarTitle: document.getElementById('premium-calendar-title').value,
+        calendarStart: document.getElementById('premium-calendar-start').value,
+        calendarEnd: document.getElementById('premium-calendar-end').value,
+        calendarLocation: document.getElementById('premium-calendar-location').value,
+    });
+
+    /**
+     * @param {HTMLButtonElement} button
+     * @returns {void}
+     */
+    const savePremiumProfile = (button) => {
+        const btn = util.disableButton(button, 'Saving');
+        weddingProfile.set(readPremiumForm());
+        syncPremiumForm();
+        btn.restore();
+        showPremiumStatus('success', 'Premium wedding profile saved. Invitation and generators now use the updated couple data on this browser.');
+    };
+
+    /**
+     * @param {HTMLButtonElement} button
+     * @returns {void}
+     */
+    const resetPremiumProfile = (button) => {
+        if (!confirm('Reset premium wedding profile to the default template?')) {
+            return;
+        }
+
+        const btn = util.disableButton(button, 'Resetting');
+        weddingProfile.reset();
+        syncPremiumForm();
+        btn.restore();
+        showPremiumStatus('secondary', 'Premium wedding profile restored to the template defaults.');
+    };
+
+    /**
      * @returns {void}
      */
     const logout = () => {
@@ -255,6 +360,8 @@ export const admin = (() => {
         offline.init();
         comment.init();
         theme.spyTop();
+        weddingProfile.init();
+        syncPremiumForm();
 
         document.addEventListener('hidden.bs.modal', getAllRequest);
 
@@ -283,6 +390,7 @@ export const admin = (() => {
         auth.init();
         theme.init();
         session.init();
+        weddingProfile.init();
 
         if (!session.isAdmin()) {
             storage('owns').clear();
@@ -313,6 +421,8 @@ export const admin = (() => {
                 changeFilterBadWord,
                 enableButtonName,
                 enableButtonPassword,
+                savePremiumProfile,
+                resetPremiumProfile,
             },
         };
     };

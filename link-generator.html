@@ -52,6 +52,7 @@
 
     <script>
         const $ = document.getElementById.bind(document);
+        const PROFILE_KEY = "wedding_profile";
 
         const MESSAGES = {
             EMPTY_BASE_URL: "Isi dulu link undangannya",
@@ -65,6 +66,14 @@
         const COLORS = {
             ERROR: "#ff4d4d",
             SUCCESS: "#000000"
+        };
+
+        const loadProfile = () => {
+            try {
+                return JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+            } catch {
+                return {};
+            }
         };
 
         const capitalizeWords = str =>
@@ -144,6 +153,12 @@
         ["guestName", "baseUrl"].forEach(id => {
             $(id).addEventListener("input", generateUrl);
         });
+
+        const profile = loadProfile();
+        if (profile.baseUrl) {
+            $("baseUrl").value = profile.baseUrl;
+        }
+        generateUrl();
 
         const playClickSound = () => {
             const audio = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU...');
