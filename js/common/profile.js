@@ -1,5 +1,19 @@
 import { storage } from './storage.js';
 
+const resolveSiteBaseUrl = (locationObject = window.location) => {
+    if (!locationObject) {
+        return 'http://localhost';
+    }
+
+    if (locationObject.origin && locationObject.origin !== 'null') {
+        return locationObject.origin.replace(/\/+$/, '');
+    }
+
+    const pathname = String(locationObject.pathname || '/');
+    const directory = pathname.endsWith('/') ? pathname : pathname.split('/').slice(0, -1).join('/') || '/';
+    return `${locationObject.protocol}//${locationObject.host}${directory}`.replace(/\/+$/, '');
+};
+
 const defaults = Object.freeze({
     invitationLabel: 'The Wedding of',
     desktopBadge: 'Save the Date!',
@@ -14,7 +28,7 @@ const defaults = Object.freeze({
     eventDateLabel: 'Kamis, 24 Juli 2025',
     guestSalutation: 'Kepada Yth. Bapak/Ibu/Saudara/i',
     invitationIntro: 'Tanpa mengurangi rasa hormat, dengan ini kami mengundang Bapak/Ibu/Saudara/i untuk hadir pada acara pernikahan kami.',
-    baseUrl: 'https://tari.erland.me',
+    baseUrl: '',
     calendarTitle: 'The Wedding of Tari and Erland',
     calendarStart: '2025-07-24 10:00:00',
     calendarEnd: '2025-07-24 14:00:00',
@@ -61,7 +75,7 @@ const buildSlug = (profile) => {
 };
 
 const normalizeValue = (key, value) => {
-    const fallback = defaults[key];
+    const fallback = key === 'baseUrl' ? resolveSiteBaseUrl() : defaults[key];
     if (typeof fallback === 'string') {
         const normalized = String(value ?? '').trim();
         return normalized.length > 0 ? normalized : fallback;
@@ -70,7 +84,7 @@ const normalizeValue = (key, value) => {
     return value ?? fallback;
 };
 
-const normalizeBaseUrl = (url) => String(url).replace(/\/+$/, '');
+const normalizeBaseUrl = (url) => String(url || resolveSiteBaseUrl()).replace(/\/+$/, '');
 
 const toDisplayNames = (profile) => ({
     coupleShortDisplay: `${profile.brideShortName} & ${profile.groomShortName}`,

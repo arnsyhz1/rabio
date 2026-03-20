@@ -97,7 +97,7 @@ INSERT INTO wedding_profiles (
     'Kamis, 24 Juli 2025',
     'Kepada Yth. Bapak/Ibu/Saudara/i',
     'Tanpa mengurangi rasa hormat, dengan ini kami mengundang Bapak/Ibu/Saudara/i untuk hadir pada acara pernikahan kami.',
-    'https://tari.erland.me',
+    '',
     'The Wedding of Tari and Erland',
     '2025-07-24 10:00:00',
     '2025-07-24 14:00:00',

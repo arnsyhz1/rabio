@@ -61,3 +61,19 @@ function profile_read_json(): array
     $decoded = json_decode($raw, true);
     return is_array($decoded) ? $decoded : [];
 }
+
+function profile_request_origin(): string
+{
+    $forwardedProto = $_SERVER['HTTP_X_FORWARDED_PROTO'] ?? null;
+    $https = $_SERVER['HTTPS'] ?? '';
+    $scheme = is_string($forwardedProto) && $forwardedProto !== ''
+        ? explode(',', $forwardedProto)[0]
+        : (($https !== '' && strtolower((string) $https) !== 'off') ? 'https' : 'http');
+
+    $forwardedHost = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? null;
+    $host = is_string($forwardedHost) && $forwardedHost !== ''
+        ? explode(',', $forwardedHost)[0]
+        : ($_SERVER['HTTP_HOST'] ?? 'localhost');
+
+    return sprintf('%s://%s', trim($scheme), trim((string) $host));
+}
