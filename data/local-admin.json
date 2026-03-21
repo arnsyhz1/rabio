@@ -1,0 +1,11 @@
+{
+  "name": "Admin Lokal",
+  "email": "admin@rabio.local",
+  "password_hash": "$2y$12$1cHmHydhNCyORolxdbpemuXMG3NAg.teIDe2Mt7yD3c1BiTgK7R62",
+  "access_key": "RABIO-USER-LOCAL-KEY",
+  "is_filter": false,
+  "can_reply": true,
+  "can_edit": true,
+  "can_delete": true,
+  "updated_at": "2026-03-21T00:00:00+00:00"
+}

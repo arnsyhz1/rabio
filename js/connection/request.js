@@ -14,7 +14,7 @@ export const request = (method, path) => {
 
     const ac = new AbortController();
 
-    let url = document.body.getAttribute('data-url');
+    let url = document.body.getAttribute('data-url') || window.location.origin || '';
     let req = {
         signal: ac.signal,
         method: String(method).toUpperCase(),
@@ -28,9 +28,24 @@ export const request = (method, path) => {
     window.addEventListener('popstate', () => ac.abort());
     window.addEventListener('beforeunload', () => ac.abort());
 
-    if (url.slice(-1) === '/') {
+    if (url.length > 0 && url.slice(-1) === '/') {
         url = url.slice(0, -1);
     }
+
+    const parseJsonResponse = async (res) => {
+        const contentType = res.headers.get('content-type') || '';
+        const payload = await res.text();
+
+        if (!contentType.includes('application/json')) {
+            throw new Error(`Endpoint ${url + path} mengembalikan respons non-JSON. Pastikan URL API komentar/dashboard sudah benar.`);
+        }
+
+        try {
+            return JSON.parse(payload);
+        } catch {
+            throw new Error(`Endpoint ${url + path} mengembalikan JSON tidak valid.`);
+        }
+    };
 
     return {
         /**
@@ -41,7 +56,7 @@ export const request = (method, path) => {
         send(transform = null) {
             return fetch(url + path, req)
                 .then((res) => {
-                    return res.json().then((json) => {
+                    return parseJsonResponse(res).then((json) => {
                         if (res.status >= HTTP_STATUS_INTERNAL_SERVER_ERROR && (json.message ?? json[0])) {
                             throw new Error(json.message ?? json[0]);
                         }
