@@ -1,14 +1,14 @@
 import { auth } from './auth.js';
 import { navbar } from './navbar.js';
 import { util } from '../../common/util.js';
-import { dto } from '../../connection/dto.js';
 import { theme } from '../../common/theme.js';
 import { storage } from '../../common/storage.js';
 import { session } from '../../common/session.js';
 import { offline } from '../../common/offline.js';
 import { weddingProfile } from '../../common/profile.js';
+import { localAdmin } from '../../common/local-admin.js';
 import { comment } from '../component/comment.js';
-import { request, HTTP_GET, HTTP_PATCH, HTTP_PUT } from '../../connection/request.js';
+import { request, HTTP_GET } from '../../connection/request.js';
 
 export const admin = (() => {
 
@@ -83,8 +83,7 @@ export const admin = (() => {
                 document.getElementById('deleteComment').checked = Boolean(res.data.can_delete);
             });
         } else {
-            await session.guest();
-            const config = storage('config').get();
+            const config = await localAdmin.getConfig(session.getToken());
             populateUserIdentity(config.name || 'User Dashboard', 'Akses via access key', session.getToken());
         }
 
@@ -99,12 +98,9 @@ export const admin = (() => {
     const changeFilterBadWord = async (checkbox) => {
         const label = util.disableCheckbox(checkbox);
 
-        await request(HTTP_PATCH, '/api/user').
-            token(session.getToken()).
-            body({
-                filter: Boolean(checkbox.checked)
-            }).
-            send();
+        await localAdmin.updateUser(session.getToken(), {
+            filter: Boolean(checkbox.checked),
+        });
 
         label.restore();
     };
@@ -116,12 +112,9 @@ export const admin = (() => {
     const replyComment = async (checkbox) => {
         const label = util.disableCheckbox(checkbox);
 
-        await request(HTTP_PATCH, '/api/user').
-            token(session.getToken()).
-            body({
-                can_reply: Boolean(checkbox.checked)
-            }).
-            send();
+        await localAdmin.updateUser(session.getToken(), {
+            can_reply: Boolean(checkbox.checked),
+        });
 
         label.restore();
     };
@@ -133,12 +126,9 @@ export const admin = (() => {
     const editComment = async (checkbox) => {
         const label = util.disableCheckbox(checkbox);
 
-        await request(HTTP_PATCH, '/api/user').
-            token(session.getToken()).
-            body({
-                can_edit: Boolean(checkbox.checked)
-            }).
-            send();
+        await localAdmin.updateUser(session.getToken(), {
+            can_edit: Boolean(checkbox.checked),
+        });
 
         label.restore();
     };
@@ -150,12 +140,9 @@ export const admin = (() => {
     const deleteComment = async (checkbox) => {
         const label = util.disableCheckbox(checkbox);
 
-        await request(HTTP_PATCH, '/api/user').
-            token(session.getToken()).
-            body({
-                can_delete: Boolean(checkbox.checked)
-            }).
-            send();
+        await localAdmin.updateUser(session.getToken(), {
+            can_delete: Boolean(checkbox.checked),
+        });
 
         label.restore();
     };
@@ -171,14 +158,11 @@ export const admin = (() => {
 
         const btn = util.disableButton(button);
 
-        await request(HTTP_PUT, '/api/key').
-            token(session.getToken()).
-            send(dto.statusResponse).
-            then((res) => {
-                if (res.data.status) {
-                    getAllRequest();
-                }
-            });
+        await localAdmin.regenerateAccessKey(session.getToken()).then((res) => {
+            if (res.status) {
+                getAllRequest();
+            }
+        });
 
         btn.restore();
     };
@@ -201,14 +185,10 @@ export const admin = (() => {
 
         const btn = util.disableButton(button);
 
-        const result = await request(HTTP_PATCH, '/api/user').
-            token(session.getToken()).
-            body({
-                old_password: old.value,
-                new_password: newest.value,
-            }).
-            send(dto.statusResponse).
-            then((res) => res.data.status, () => false);
+        const result = await localAdmin.updateUser(session.getToken(), {
+            old_password: old.value,
+            new_password: newest.value,
+        }).then((res) => res.status, () => false);
 
         btn.restore();
 
@@ -238,13 +218,9 @@ export const admin = (() => {
         name.disabled = true;
         const btn = util.disableButton(button);
 
-        const result = await request(HTTP_PATCH, '/api/user').
-            token(session.getToken()).
-            body({
-                name: name.value,
-            }).
-            send(dto.statusResponse).
-            then((res) => res.data.status, () => false);
+        const result = await localAdmin.updateUser(session.getToken(), {
+            name: name.value,
+        }).then((res) => res.status, () => false);
 
         name.disabled = false;
         btn.restore();

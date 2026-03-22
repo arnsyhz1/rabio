@@ -3,7 +3,8 @@ import { bs } from '../../libs/bootstrap.js';
 import { dto } from '../../connection/dto.js';
 import { storage } from '../../common/storage.js';
 import { session } from '../../common/session.js';
-import { request, HTTP_GET, HTTP_STATUS_OK } from '../../connection/request.js';
+import { localAdmin } from '../../common/local-admin.js';
+import { HTTP_STATUS_OK } from '../../connection/request.js';
 
 export const auth = (() => {
 
@@ -25,8 +26,11 @@ export const auth = (() => {
         formEmail.disabled = true;
         formPassword.disabled = true;
 
-        const res = await session.login(dto.postSessionRequest(formEmail.value, formPassword.value));
-        if (res) {
+        const result = await localAdmin.login(formEmail.value, formPassword.value).then((res) => {
+            session.setToken(res.token);
+            return true;
+        }, () => false);
+        if (result) {
             formEmail.value = null;
             formPassword.value = null;
             bs.modal('mainModal').hide();
@@ -55,7 +59,7 @@ export const auth = (() => {
         accessKeyField.disabled = true;
         session.setToken(accessKey);
 
-        const valid = await session.guest().then(() => true, () => false);
+        const valid = await localAdmin.getConfig(accessKey).then(() => true, () => false);
         if (valid) {
             accessKeyField.value = '';
             bs.modal('mainModal').hide();
@@ -83,14 +87,9 @@ export const auth = (() => {
      * @returns {Promise<ReturnType<typeof dto.baseResponse>>}
      */
     const getDetailUser = () => {
-        return request(HTTP_GET, '/api/user').token(session.getToken()).send().then((res) => {
-            if (res.code !== HTTP_STATUS_OK) {
-                throw new Error('failed to get user.');
-            }
-
-            Object.entries(res.data).forEach(([k, v]) => user.set(k, v));
-
-            return res;
+        return localAdmin.getUser(session.getToken()).then((data) => {
+            Object.entries(data).forEach(([k, v]) => user.set(k, v));
+            return dto.baseResponse(HTTP_STATUS_OK, data, null);
         }, (res) => {
             clearSession();
             return res;
