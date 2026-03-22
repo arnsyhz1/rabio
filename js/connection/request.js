@@ -10,11 +10,26 @@ export const HTTP_STATUS_OK = 200;
 export const HTTP_STATUS_CREATED = 201;
 export const HTTP_STATUS_INTERNAL_SERVER_ERROR = 500;
 
+const resolveRequestBase = () => {
+    const configured = document.body?.getAttribute('data-url')?.trim() || '';
+
+    if (configured.length > 0) {
+        if (/^https?:\/\//i.test(configured)) {
+            return configured.replace(/\/+$/, '');
+        }
+
+        const resolved = new URL(configured, window.location.href);
+        return resolved.href.replace(/\/+$/, '');
+    }
+
+    return window.location.origin || '';
+};
+
 export const request = (method, path) => {
 
     const ac = new AbortController();
 
-    let url = document.body.getAttribute('data-url') || window.location.origin || '';
+    const url = resolveRequestBase();
     let req = {
         signal: ac.signal,
         method: String(method).toUpperCase(),
@@ -28,9 +43,20 @@ export const request = (method, path) => {
     window.addEventListener('popstate', () => ac.abort());
     window.addEventListener('beforeunload', () => ac.abort());
 
-    if (url.length > 0 && url.slice(-1) === '/') {
-        url = url.slice(0, -1);
-    }
+    const parseJsonResponse = async (res) => {
+        const contentType = res.headers.get('content-type') || '';
+        const payload = await res.text();
+
+        if (!contentType.includes('application/json')) {
+            throw new Error(`Endpoint ${url + path} mengembalikan respons non-JSON. Pastikan URL API komentar/dashboard sudah benar.`);
+        }
+
+        try {
+            return JSON.parse(payload);
+        } catch {
+            throw new Error(`Endpoint ${url + path} mengembalikan JSON tidak valid.`);
+        }
+    };
 
     const parseJsonResponse = async (res) => {
         const contentType = res.headers.get('content-type') || '';
