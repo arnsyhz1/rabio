@@ -58,6 +58,21 @@ export const request = (method, path) => {
         }
     };
 
+    const parseJsonResponse = async (res) => {
+        const contentType = res.headers.get('content-type') || '';
+        const payload = await res.text();
+
+        if (!contentType.includes('application/json')) {
+            throw new Error(`Endpoint ${url + path} mengembalikan respons non-JSON. Pastikan URL API komentar/dashboard sudah benar.`);
+        }
+
+        try {
+            return JSON.parse(payload);
+        } catch {
+            throw new Error(`Endpoint ${url + path} mengembalikan JSON tidak valid.`);
+        }
+    };
+
     return {
         /**
          * @template T
